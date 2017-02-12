@@ -1,10 +1,11 @@
 {
   "name": "@dadi/api-mongodb",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "James Lambie <jameslambie@gmail.com>",
   "license": "ISC",
@@ -12,5 +13,12 @@
     "convict": "^2.0.0",
     "debug": "^2.6.0",
     "mongodb": "^2.2.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dadi/api-mongodb.git"
+  },
+  "devDependencies": {
+    "semantic-release": "^6.3.2"
   }
 }
