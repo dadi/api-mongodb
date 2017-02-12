@@ -1,0 +1,16 @@
+{
+  "name": "@dadi/api-mongodb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "James Lambie <jameslambie@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "convict": "^2.0.0",
+    "debug": "^2.6.0",
+    "mongodb": "^2.2.x"
+  }
+}
