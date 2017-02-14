@@ -28,6 +28,7 @@
     "semantic-release": "^6.3.2",
     "should": "~4.0.4",
     "sinon": "~1.17.6",
+    "snazzy": "^6.0.0",
     "standard": "*"
   }
 }
