@@ -4,7 +4,7 @@
   "description": "A MongoDB adapter for DADI API",
   "main": "index.js",
   "scripts": {
-    "test": "snazzy 'lib/**/*.js' && env NODE_ENV=test ./node_modules/.bin/istanbul cover -x **/workspace/** --report cobertura --report text --report html --report lcov ./node_modules/mocha/bin/_mocha test",
+    "test": "snazzy 'lib/**/*.js' && env NODE_ENV=test ./node_modules/.bin/istanbul cover --report cobertura --report text --report html --report lcov ./node_modules/mocha/bin/_mocha test",
     "posttest": "./scripts/coverage.js",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
