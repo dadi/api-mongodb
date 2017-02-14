@@ -1,10 +1,11 @@
 {
   "name": "@dadi/api-mongodb",
   "version": "0.0.0-development",
-  "description": "",
+  "description": "A MongoDB adapter for DADI API",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "test": "snazzy 'lib/**/*.js' && env NODE_ENV=test ./node_modules/.bin/istanbul cover -x **/workspace/** --report cobertura --report text --report html --report lcov ./node_modules/mocha/bin/_mocha test",
+    "posttest": "./scripts/coverage.js",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "James Lambie <jameslambie@gmail.com>",
@@ -19,6 +20,15 @@
     "url": "https://github.com/dadi/api-mongodb.git"
   },
   "devDependencies": {
-    "semantic-release": "^6.3.2"
+    "colors": "^1.1.2",
+    "env-test": "^1.0.0",
+    "istanbul": "^1.1.0-alpha.1",
+    "istanbul-cobertura-badger": "^1.1.0",
+    "mocha": "~3.2.0",
+    "semantic-release": "^6.3.2",
+    "should": "~4.0.4",
+    "sinon": "~1.17.6",
+    "snazzy": "^6.0.0",
+    "standard": "*"
   }
 }

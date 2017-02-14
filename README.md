@@ -1,8 +1,37 @@
 # API MongoDB Adapter
 
 [![npm (scoped)](https://img.shields.io/npm/v/@dadi/api-mongodb.svg?maxAge=10800&style=flat-square)](https://www.npmjs.com/package/@dadi/api-mongodb)
+[![coverage](https://img.shields.io/badge/coverage-57%25-red.svg?style=flat-square)](https://github.com/dadi/api-mongodb)
+[![Build Status](https://travis-ci.org/dadi/api-mongodb.svg?branch=master)](https://travis-ci.org/dadi/api-mongodb)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
+
+## Usage
+
+To use this adapter with your DADI API installation, you'll need to add it to your API's dependencies:
+
+```bash
+$ cd my-api
+$ npm install --save @dadi/api-mongodb
+```
+
+## Requirements
+
+* a running MongoDB server
+
+## Tests
+
+To run the test suite you'll need a MongoDB server running on localhost with the default port of 27017. If you've changed the default port, modify the test configuration file at `config/mongodb.test.json`. This file is created from `config/mongodb.test.json.sample` the first time the test suite is run.
+
+Run the tests:
+
+```bash
+$ git clone https://github.com/dadi/api-mongodb.git
+$ cd api-mongodb
+$ npm test
+```
+
+## Configure
 
 ### Configuration Files
 
