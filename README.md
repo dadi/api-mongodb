@@ -6,6 +6,11 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
+## Requirements
+
+* [DADI API](https://www.npmjs.com/package/@dadi/api) Version 2.0.0 or greater
+* a running MongoDB server
+
 ## Usage
 
 To use this adapter with your DADI API installation, you'll need to add it to your API's dependencies:
@@ -14,10 +19,6 @@ To use this adapter with your DADI API installation, you'll need to add it to yo
 $ cd my-api
 $ npm install --save @dadi/api-mongodb
 ```
-
-## Requirements
-
-* a running MongoDB server
 
 ## Tests
 
@@ -76,24 +77,22 @@ Specifies the MongoDB database(s) to connect to.
 
 ```json
 {
-  "database": {
-    "hosts": [
-        {
-          "host": "127.0.0.1",
-          "port": 27017
-        }
-      ],
-    "database": "myApi",
-    "username": "apiUser",
-    "password": "apiPassword",
-    "ssl": false,
-    "replicaSet": false,
-    "enableCollectionDatabases": false
-  }
+  "hosts": [
+      {
+        "host": "127.0.0.1",
+        "port": 27017
+      }
+    ],
+  "database": "myApi",
+  "username": "apiUser",
+  "password": "apiPassword",
+  "ssl": false,
+  "replicaSet": false,
+  "enableCollectionDatabases": false
 }
 ```
 
-**database.hosts**: must contain an array of hosts each with `host` and `port`.
+**hosts**: must contain an array of hosts each with `host` and `port`.
 
  * Hosts may be specified using an IP address or hostname.
  * If only using a single MongoDB instance this array needs only one host.
@@ -103,27 +102,25 @@ Multiple hosts are required for a replica set or sharded setup and may look simi
 
 ```json
 {
-  "database": {
-    "hosts": [
-        {
-          "host": "ds012345-z1.mongolab.com",
-          "port": 12345
-        },
-        {
-          "host": "ds012345-z2.mongolab.com",
-          "port": 12345
-        },
-        {
-          "host": "ds012345-z3.mongolab.com",
-          "port": 12345
-        }
-      ],
-    "database": "myApi",
-    "username": "apiUser",
-    "password": "apiPassword",
-    "ssl": false,
-    "replicaSet": "rs0001"
-  }
+  "hosts": [
+      {
+        "host": "ds012345-z1.mongolab.com",
+        "port": 12345
+      },
+      {
+        "host": "ds012345-z2.mongolab.com",
+        "port": 12345
+      },
+      {
+        "host": "ds012345-z3.mongolab.com",
+        "port": 12345
+      }
+    ],
+  "database": "myApi",
+  "username": "apiUser",
+  "password": "apiPassword",
+  "ssl": false,
+  "replicaSet": "rs0001"
 }
 ```
 
