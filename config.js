@@ -65,7 +65,7 @@ var env = conf.get('env')
 conf.loadFile('./config/mongodb.' + env + '.json')
 
 // Perform validation
-conf.validate({strict: false});
+conf.validate()
 
 // Load domain-specific configuration
 // conf.updateConfigDataForDomain = function(domain) {
@@ -87,6 +87,3 @@ conf.validate({strict: false});
 // };
 
 module.exports = conf
-// module.exports.configPath = function() {
-//   return './config/config.' + conf.get('env') + '.json';
-// }
