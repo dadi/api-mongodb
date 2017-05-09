@@ -10,6 +10,11 @@ var conf = convict({
     env: "NODE_ENV",
     arg: "node_env"
   },
+  connectWithCollection: {
+    doc: "",
+    format: Boolean,
+    default: true,
+  },
   hosts: {
     doc: "",
     format: Array,
