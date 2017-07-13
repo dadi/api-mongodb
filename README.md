@@ -1,5 +1,7 @@
 # API MongoDB Adapter
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/dadi/api-mongodb.svg)](https://greenkeeper.io/)
+
 [![npm (scoped)](https://img.shields.io/npm/v/@dadi/api-mongodb.svg?maxAge=10800&style=flat-square)](https://www.npmjs.com/package/@dadi/api-mongodb)
 [![coverage](https://img.shields.io/badge/coverage-67%25-yellow.svg?style=flat?style=flat-square)](https://github.com/dadi/api-mongodb)
 [![Build Status](https://travis-ci.org/dadi/api-mongodb.svg?branch=master)](https://travis-ci.org/dadi/api-mongodb)
