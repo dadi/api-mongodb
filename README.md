@@ -8,7 +8,7 @@
 
 ## Requirements
 
-* [DADI API](https://www.npmjs.com/package/@dadi/api) Version 2.0.0 or greater
+* [DADI API](https://www.npmjs.com/package/@dadi/api) Version 3.0.0 or greater
 * a running MongoDB server
 
 ## Usage
@@ -32,42 +32,38 @@ $ cd api-mongodb
 $ npm test
 ```
 
-## Configure
+## Configuration
 
 ### Configuration Files
 
-Configuration settings are defined in JSON files within a `/config` directory at the root of your API application. DADI API has provision for multiple configuration files, one for each environment that your API is expected to run under: `development`, `qa` and `production`.
+Configuration settings are defined in JSON files within a `/config` directory at the root of your API application. DADI API uses a configuration file for the MongoDB connector that matches the environment you are running under.
 
 The naming convention for MongoDB configuration files follows the format `mongodb.<environment>.json`
 
-For example:
+#### Example
 
-```
-mongodb.development.json
-mongodb.qa.json
-mongodb.production.json
-```
+Assuming that the entry point for your application is `main.js` and launching it with the following command, DADI API will attempt to load a MongoDB configuration file named `mongodb.production.js`.
 
+```sh
+$ NODE_ENV=production node main.js
+```
 ### Application Anatomy
 
 ```sh
 my-api/
-  config/            # contains environment-specific
-                     # configuration properties
-    config.development.json
-    config.qa.json
+  config/                     # contains environment-specific configuration properties
+    config.development.json   # main API configuration file, development environment
     config.production.json
-    mongodb.development.json
-    mongodb.qa.json
+    mongodb.development.json  # MongoDB configuration file, development environment
     mongodb.production.json
 
-  main.js            # the entry point of the app
+  main.js                     # the entry point of the app
 
   package.json
 
   workspace/
-    collections/     # collection schema files
-    endpoints/       # custom Javascript endpoints
+    collections/              # collection schema files
+    endpoints/                # custom Javascript endpoints
 
 ```
 
@@ -78,11 +74,11 @@ Specifies the MongoDB database(s) to connect to.
 ```json
 {
   "hosts": [
-      {
-        "host": "127.0.0.1",
-        "port": 27017
-      }
-    ],
+    {
+      "host": "127.0.0.1",
+      "port": 27017
+    }
+  ],
   "database": "myApi",
   "username": "apiUser",
   "password": "apiPassword",
@@ -92,12 +88,77 @@ Specifies the MongoDB database(s) to connect to.
 }
 ```
 
-**hosts**: must contain an array of hosts each with `host` and `port`.
+#### Configuration Properties
 
- * Hosts may be specified using an IP address or hostname.
- * If only using a single MongoDB instance this array needs only one host.
+##### hosts
 
-Multiple hosts are required for a replica set or sharded setup and may look similar to the following example using [MongoLab](https://mongolab.com) databases:
+An array of database hosts to connect to; each array entry must contain `host` and `port`. Hosts may be specified using an IP address or hostname.
+
+```json
+"hosts": [
+  {
+    "host": "127.0.0.1",
+    "port": 27017
+  }
+]
+```
+
+> If only using a single MongoDB instance this array needs only one host.
+
+##### database `String`
+
+The name of the database in which to store collection data.
+
+##### username `String`
+The username used to connect to the specified database.
+
+##### password `String`
+
+The password used to connect to the specified database.
+
+##### ssl `Boolean`
+
+ * Default: `false`
+
+##### replicaSet `Boolean`
+
+If `false`, the API will not attempt to connect to a replica set. If a string value, the API will use this value in the connection string to connect to a replica set.
+
+ * Default: `false`
+ * Example: `"s0001"`
+
+##### enableCollectionDatabases `Boolean`
+
+The `enableCollectionDatabases` setting determines whether the API will store collection data in separate databases as defined by the collection URLs.
+
+The collection URL format contains three segments:
+
+```
+e.g. http://api.somedomain.tech/1.0/library/books
+```
+
+ * **API version**: `"1.0"`
+ * **Database**: `"library"`
+ * **Collection**: `"books"`
+
+If `"enableCollectionDatabases": true` the API will store the `books` data in the `library` database, regardless of the `database` setting in the configuration file.
+
+Otherwise, if `"enableCollectionDatabases": false` the API will store the `books` data (and all other collection data) in the database specified in the configuration file's `database` setting.
+
+#### Environment variables for database configuration properties
+
+Property | Environment variable | Description
+:--|:---|:--
+Database name | `DB_NAME` | The name of the database that holds general collection data
+Database username | `DB_USERNAME` | The username for connecting to the database that holds general collection data
+Database password | `DB_PASSWORD` | The password for connecting to the database that holds general collection data
+Authentication database name | `DB_AUTH_NAME` | The name of the database that holds authentication data, such as client account keys and access tokens
+Authentication database username | `DB_AUTH_USERNAME` | The username for connecting to the database that holds authentication data
+Authentication database password | `DB_AUTH_PASSWORD` | The password for connecting to the database that holds authentication data
+
+### Connecting to a replica set or sharded database
+
+Multiple `host` entries are required for a replica set or sharded setup and may look similar to the following example using [MongoLab](https://mongolab.com) databases:
 
 
 ```json
@@ -131,33 +192,3 @@ mongodb://apiUser:apiPassword@ds012345-z1.mongolab.com:12345,ds012345-z2.mongola
 ```
 
 The Node.js MongoDB driver handles communication with the database servers to determine the primary instance.
-
-#### Collection-specific Databases
-
-The `enableCollectionDatabases` setting determines whether the API will store collection data in separate databases as defined by the collection URLs.
-
-```
-/1.0/library/books
-```
-
-The URL format contains three segments:
-
- * **API version**: `"1.0"`
- * **Database**: `"library"`
- * **Collection**: `"books"`
-
-If `"enableCollectionDatabases": true` the API will store the `books` data in the `library` database, regardless of the `database` setting in the configuration file.
-
-Otherwise, if `"enableCollectionDatabases": false` the API will store the `books` data (and all other collection data) in the database specified in the configuration file's `database` setting.
-
-#### Configuration Properties
-
-Property       | Description        |  Type        | Default         |  Example
-:----------------|:------------|:------------------|:----------------|:---------
-hosts | An array of database hosts to connect to | Array | `[ { host: "127.0.0.1", port: 27017 } ]` | `""`
-database | The database in which to store collection data  | String | `""` | `"myApi"`
-username | The username used to connect to the database  | String | `""` | `"apiUser"`
-password | The password used to connect to the database | String | `""` | `"apiPassword"`
-ssl |  | Boolean | `false` | `true`
-replicaSet | If false, the API will not attempt to connect to a replica set. If a string value, the API will use this value in the connection string to connect to a replica set  | Boolean/String | `false` | `"s0001"`
-enableCollectionDatabases | If true, the API allows splitting collection data into separate databases | Boolean | `false` | `true`
