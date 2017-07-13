@@ -81,7 +81,7 @@ describe('MongoDB Connection', function () {
       parts.protocol.should.eql('mongodb:')
       parts.host.should.eql('127.0.0.1:27017')
       parts.hostname.should.eql('127.0.0.1')
-      parts.port.should.eql(27017)
+      parts.port.should.eql('27017')
       parts.pathname.should.eql('/testdb')
       done()
     })
@@ -114,7 +114,7 @@ describe('MongoDB Connection', function () {
       var parts = url.parse(connectionString)
 
       querystring.parse(parts.query).ssl.should.eql('true')
-      querystring.parse(parts.query).maxPoolSize.should.eql(1)
+      querystring.parse(parts.query).maxPoolSize.should.eql('1')
       querystring.parse(parts.query).replicaSet.should.eql('repl-01')
       querystring.parse(parts.query).readPreference.should.eql('secondaryPreferred')
       done()
