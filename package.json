@@ -2,6 +2,16 @@
   "name": "@dadi/api-mongodb",
   "version": "0.0.0-development",
   "description": "A MongoDB adapter for DADI API",
+  "keywords": [
+    "dadi",
+    "api",
+    "connector",
+    "mongo",
+    "MongoDB",
+    "dadi-connector",
+    "dadi-api-connector",
+    "api-connector"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "standard 'lib/**/*.js' | snazzy && env NODE_ENV=test ./node_modules/.bin/istanbul cover --report cobertura --report text --report html --report lcov ./node_modules/mocha/bin/_mocha test",
