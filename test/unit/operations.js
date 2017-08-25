@@ -1,4 +1,3 @@
-var _ = require('underscore')
 var EventEmitter = require('events').EventEmitter
 var MongoDBAdapter = require('../../lib')
 var querystring = require('querystring')
@@ -24,6 +23,69 @@ describe('MongoDB Operations', function () {
 
   afterEach(function(done) {
     done()
+  })
+
+  describe('indexes', function () {
+    describe('create index', function () {
+      it('should create an index on the specified collection', function(done) {
+        var mongodb = new MongoDBAdapter()
+
+        let indexes = [
+          {
+            keys: ['fieldName'],
+            options: {}
+          }
+        ]
+
+        mongodb.connect().then(() => {
+          mongodb.index('test', indexes).then(result => {
+            result.should.be.Array
+            result.length.should.eql(1)
+            should.exist(result[0].index)
+            result[0].index.should.eql('fieldName_1')
+
+            done()
+          }).catch((err) => {
+            done(err)
+          })
+        })
+      })
+    })
+
+    describe('get index', function () {
+      it('should return a collections indexes', function(done) {
+        var mongodb = new MongoDBAdapter()
+
+        let indexes = [
+          {
+            keys: ['fieldName'],
+            options: {}
+          }
+        ]
+
+        mongodb.connect().then(() => {
+          mongodb.index('test', indexes).then(result => {
+            mongodb.getIndexes('test').then(result => {
+
+/*
+[ { v: 1, key: { _id: 1 }, name: '_id_', ns: 'testdb.test' },
+  { v: 1,
+    key: { fieldName: 1 },
+    name: 'fieldName_1',
+    ns: 'testdb.test' } ]
+*/
+
+              result.should.be.Array
+              result.length.should.be.above(0)
+              should.exist(result[0].name)
+              done()
+            })
+          }).catch(err => {
+            done(err)
+          })
+        })
+      })
+    })
   })
 
   describe('insert', function () {
@@ -80,6 +142,26 @@ describe('MongoDB Operations', function () {
     })
   })
 
+  describe('stats', function () {
+    it('should return stats for the specified collection', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var doc = { fieldName: 'foo' }
+
+      mongodb.connect().then(() => {
+        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+          mongodb.stats('test', {}).then(result => {
+            should.exist(result.count)
+            result.count.should.eql(1)
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+  })
+
   describe('find', function () {
     it('should find a single document by id', function(done) {
       var mongodb = new MongoDBAdapter()
@@ -113,7 +195,63 @@ describe('MongoDB Operations', function () {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0]._id.should.eql(inserted._id)
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
 
+    it('should translate query using $containsAny', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
+
+      mongodb.connect().then(() => {
+        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+
+          mongodb.find({ fieldName: { '$containsAny': ['foo1'] } }, 'test', {}, helper.getModelSchema()).then(result => {
+            result.results.should.be.Array
+            result.results.length.should.eql(1)
+            result.results[0].fieldName.should.eql('foo1')
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+
+    it('should translate query using regular expressions', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
+
+      mongodb.connect().then(() => {
+        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+
+          mongodb.find({ fieldName: /foo1/ }, 'test', {}, helper.getModelSchema()).then(result => {
+            result.results.should.be.Array
+            result.results.length.should.eql(1)
+            result.results[0].fieldName.should.eql('foo1')
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+
+    it('should return metadata when returning documents', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var doc = { fieldName: 'foo' }
+
+      mongodb.connect().then(() => {
+        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+          var inserted = result[0]
+          mongodb.find({ fieldName: inserted.fieldName }, 'test', {}, helper.getModelSchema()).then(result => {
             should.exist(result.metadata)
             result.metadata.totalCount.should.eql(1)
             done()
@@ -213,6 +351,116 @@ describe('MongoDB Operations', function () {
             result[0].field1.should.be.above(0)
 
             should.not.exist(result.metadata)
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+  })
+
+  describe('update', function () {
+    it('should update a single document by id and return count', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var doc = {
+        fieldName: 'foo'
+      }
+
+      mongodb.connect().then(() => {
+        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+          let id = result[0]._id
+          let update = { '$set': { fieldName: 'fooXX' } }
+
+          mongodb.update({ _id: id }, 'test', update, { multi: false }, helper.getModelSchema()).then(result => {
+            should.exist(result.matchedCount)
+            result.matchedCount.should.eql(1)
+
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+
+    it('should update many documents by query and return count', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var docs = [
+        {
+          fieldName: 'foo'
+        },
+        {
+          fieldName: 'foo_1'
+        }
+      ]
+
+      mongodb.connect().then(() => {
+        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+          let id = result[0]._id
+          let query = { fieldName: { '$regex': '^foo' } }
+
+          mongodb.update(query, 'test', { '$set': { fieldName: 'xxx' } }, {}, helper.getModelSchema()).then(result => {
+            should.exist(result.matchedCount)
+            result.matchedCount.should.eql(2)
+
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+  })
+
+  describe('delete', function () {
+    it('should delete a single document by id and return count', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var doc = {
+        fieldName: 'foo'
+      }
+
+      mongodb.connect().then(() => {
+        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+          let id = result[0]._id
+          let update = { '$set': { fieldName: 'fooXX' } }
+
+          mongodb.delete({ _id: id }, 'test', helper.getModelSchema()).then(result => {
+            should.exist(result.deletedCount)
+            result.deletedCount.should.eql(1)
+
+            done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+
+    it('should delete many documents by query and return count', function(done) {
+      var mongodb = new MongoDBAdapter()
+
+      var docs = [
+        {
+          fieldName: 'foo'
+        },
+        {
+          fieldName: 'foo_1'
+        }
+      ]
+
+      mongodb.connect().then(() => {
+        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+          let id = result[0]._id
+          let query = { fieldName: { '$regex': '^foo' } }
+
+          mongodb.delete(query, 'test', helper.getModelSchema()).then(result => {
+            should.exist(result.deletedCount)
+            result.deletedCount.should.eql(2)
+
             done()
           })
         }).catch((err) => {

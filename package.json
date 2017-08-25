@@ -24,8 +24,7 @@
     "@dadi/metadata": "^1.0.0",
     "convict": "^4.0.0",
     "debug": "^2.6.0",
-    "mongodb": "^2.2.x",
-    "underscore": "^1.8.3"
+    "mongodb": "^2.2.x"
   },
   "repository": {
     "type": "git",
