@@ -1,6 +1,6 @@
 {
   "name": "@dadi/api-mongodb",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A MongoDB adapter for DADI API",
   "keywords": [
     "dadi",
