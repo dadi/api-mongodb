@@ -23,8 +23,8 @@
   "dependencies": {
     "@dadi/metadata": "^1.0.0",
     "convict": "^4.0.0",
-    "debug": "^2.6.0",
-    "mongodb": "^2.2.x"
+    "debug": "^3.0.0",
+    "mongodb": "^2.2.x",
   },
   "repository": {
     "type": "git",
@@ -35,8 +35,8 @@
     "env-test": "^1.0.0",
     "istanbul": "^1.1.0-alpha.1",
     "istanbul-cobertura-badger": "^1.1.0",
-    "mocha": "~3.4.2",
-    "semantic-release": "^6.3.6",
+    "mocha": "~3.5.0",
+    "semantic-release": "^7.0.1",
     "should": "~11.2.1",
     "sinon": "~2.3.8",
     "snazzy": "^7.0.0",
