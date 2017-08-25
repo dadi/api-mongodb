@@ -1,4 +1,3 @@
-var _ = require('underscore')
 var EventEmitter = require('events').EventEmitter
 var MongoDBAdapter = require('../../lib')
 var querystring = require('querystring')

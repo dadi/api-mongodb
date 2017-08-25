@@ -1,4 +1,3 @@
-var _ = require('underscore')
 var EventEmitter = require('events').EventEmitter
 var MongoDBAdapter = require('../../lib')
 var querystring = require('querystring')
@@ -113,7 +112,7 @@ describe('MongoDB', function () {
         var schema = {}
         schema.fields = fields
 
-        schema.fields.field2 = _.extend({}, schema.fields.fieldName, {
+        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
           type: 'ObjectID',
           required: false
         })
@@ -134,7 +133,7 @@ describe('MongoDB', function () {
         var schema = {}
         schema.fields = fields
 
-        schema.fields.field2 = _.extend({}, schema.fields.fieldName, {
+        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
           type: 'Reference',
           required: false
         })
@@ -155,12 +154,12 @@ describe('MongoDB', function () {
         var schema = {}
         schema.fields = fields
 
-        schema.fields.field2 = _.extend({}, schema.fields.fieldName, {
+        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
           type: 'ObjectID',
           required: false
         })
 
-        schema.fields.field3 = _.extend({}, schema.fields.fieldName, {
+        schema.fields.field3 = Object.assign({}, schema.fields.fieldName, {
           type: 'Object',
           required: false
         })
@@ -181,12 +180,12 @@ describe('MongoDB', function () {
         var schema = {}
         schema.fields = fields
 
-        schema.fields.field2 = _.extend({}, schema.fields.fieldName, {
+        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
           type: 'ObjectID',
           required: false
         })
 
-        schema.fields.field3 = _.extend({}, schema.fields.fieldName, {
+        schema.fields.field3 = Object.assign({}, schema.fields.fieldName, {
           type: 'Object',
           required: false
         })
