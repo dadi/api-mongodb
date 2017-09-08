@@ -97,7 +97,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           result.should.be.Array
           result.length.should.eql(1)
           should.exist(result[0].fieldName)
@@ -124,7 +124,7 @@ describe('MongoDB Operations', function () {
       ]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
           result.should.be.Array
           result.length.should.eql(2)
           should.exist(result[0].fieldName)
@@ -149,7 +149,7 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           mongodb.stats('test', {}).then(result => {
             should.exist(result.count)
             result.count.should.eql(1)
@@ -169,7 +169,7 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           var inserted = result[0]
           mongodb.find({ _id: inserted._id }, 'test', {}, helper.getModelSchema()).then(result => {
             result.results.should.be.Array
@@ -189,7 +189,7 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           var inserted = result[0]
           mongodb.find({ fieldName: inserted.fieldName }, 'test', {}, helper.getModelSchema()).then(result => {
             result.results.should.be.Array
@@ -209,7 +209,7 @@ describe('MongoDB Operations', function () {
       var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
 
           mongodb.find({ fieldName: { '$containsAny': ['foo1'] } }, 'test', {}, helper.getModelSchema()).then(result => {
             result.results.should.be.Array
@@ -229,7 +229,7 @@ describe('MongoDB Operations', function () {
       var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
 
           mongodb.find({ fieldName: /foo1/ }, 'test', {}, helper.getModelSchema()).then(result => {
             result.results.should.be.Array
@@ -249,7 +249,7 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           var inserted = result[0]
           mongodb.find({ fieldName: inserted.fieldName }, 'test', {}, helper.getModelSchema()).then(result => {
             should.exist(result.metadata)
@@ -268,7 +268,7 @@ describe('MongoDB Operations', function () {
       var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
 
           var query = [
             { $match: { fieldName: 'foo1' } }
@@ -300,7 +300,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getExtendedModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getExtendedModelSchema()).then(result => {
 
           var query = [
             {
@@ -338,7 +338,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getExtendedModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getExtendedModelSchema()).then(result => {
 
           var query = [
             { $match: { 'field2': { '$gte': 1 } } },
@@ -369,7 +369,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           let id = result[0]._id
           let update = { '$set': { fieldName: 'fooXX' } }
 
@@ -398,7 +398,7 @@ describe('MongoDB Operations', function () {
       ]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
           let id = result[0]._id
           let query = { fieldName: { '$regex': '^foo' } }
 
@@ -424,7 +424,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
           let id = result[0]._id
           let update = { '$set': { fieldName: 'fooXX' } }
 
@@ -453,7 +453,7 @@ describe('MongoDB Operations', function () {
       ]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', helper.getModelSchema()).then(result => {
+        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
           let id = result[0]._id
           let query = { fieldName: { '$regex': '^foo' } }
 
