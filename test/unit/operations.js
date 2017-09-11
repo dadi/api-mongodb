@@ -97,7 +97,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           result.should.be.Array
           result.length.should.eql(1)
           should.exist(result[0].fieldName)
@@ -124,7 +124,7 @@ describe('MongoDB Operations', function () {
       ]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           result.should.be.Array
           result.length.should.eql(2)
           should.exist(result[0].fieldName)
@@ -149,7 +149,7 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           mongodb.stats('test', {}).then(result => {
             should.exist(result.count)
             result.count.should.eql(1)
@@ -169,9 +169,9 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           var inserted = result[0]
-          mongodb.find({ _id: inserted._id }, 'test', {}, helper.getModelSchema()).then(result => {
+          mongodb.find({ query: { _id: inserted._id }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0]._id.should.eql(inserted._id)
@@ -189,9 +189,9 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           var inserted = result[0]
-          mongodb.find({ fieldName: inserted.fieldName }, 'test', {}, helper.getModelSchema()).then(result => {
+          mongodb.find({ query: { fieldName: inserted.fieldName }, collection: 'test', schema:  helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0]._id.should.eql(inserted._id)
@@ -209,9 +209,8 @@ describe('MongoDB Operations', function () {
       var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
-
-          mongodb.find({ fieldName: { '$containsAny': ['foo1'] } }, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
+          mongodb.find({query: { fieldName: { '$containsAny': ['foo1'] } }, collection: 'test', schema:  helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0].fieldName.should.eql('foo1')
@@ -229,9 +228,8 @@ describe('MongoDB Operations', function () {
       var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
-
-          mongodb.find({ fieldName: /foo1/ }, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
+          mongodb.find({query: { fieldName: /foo1/ }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0].fieldName.should.eql('foo1')
@@ -249,9 +247,9 @@ describe('MongoDB Operations', function () {
       var doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           var inserted = result[0]
-          mongodb.find({ fieldName: inserted.fieldName }, 'test', {}, helper.getModelSchema()).then(result => {
+          mongodb.find({ query: { fieldName: inserted.fieldName }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             should.exist(result.metadata)
             result.metadata.totalCount.should.eql(1)
             done()
@@ -268,13 +266,13 @@ describe('MongoDB Operations', function () {
       var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
 
           var query = [
             { $match: { fieldName: 'foo1' } }
           ]
 
-          mongodb.find(query, 'test', {}, helper.getModelSchema()).then(result => {
+          mongodb.find({query: query, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             result.should.be.Array
             result.length.should.eql(1)
             result[0].fieldName.should.eql('foo1')
@@ -300,7 +298,7 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getExtendedModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getExtendedModelSchema()}).then(result => {
 
           var query = [
             {
@@ -312,7 +310,7 @@ describe('MongoDB Operations', function () {
             }
           ]
 
-          mongodb.find(query, 'test', {}, helper.getExtendedModelSchema()).then(result => {
+          mongodb.find({query: query, collection: 'test', schema: helper.getExtendedModelSchema()}).then(result => {
             result.should.be.Array
             result.length.should.equal(1)
             result[0].averageNumber.should.be.above(0)
@@ -338,14 +336,14 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getExtendedModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getExtendedModelSchema()}).then(result => {
 
           var query = [
             { $match: { 'field2': { '$gte': 1 } } },
             { $limit: 2 }
           ]
 
-          mongodb.find(query, 'test', {}, helper.getExtendedModelSchema()).then(result => {
+          mongodb.find({query: query, collection: 'test', schema: helper.getExtendedModelSchema()}).then(result => {
             result.should.be.Array
             result.length.should.equal(2)
             result[0].field1.should.be.above(0)
@@ -369,11 +367,11 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           let id = result[0]._id
           let update = { '$set': { fieldName: 'fooXX' } }
 
-          mongodb.update({ _id: id }, 'test', update, { multi: false }, helper.getModelSchema()).then(result => {
+          mongodb.update({query: { _id: id }, collection: 'test', update: update, options: { multi: false }, schema: helper.getModelSchema()}).then(result => {
             should.exist(result.matchedCount)
             result.matchedCount.should.eql(1)
 
@@ -398,11 +396,11 @@ describe('MongoDB Operations', function () {
       ]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           let id = result[0]._id
           let query = { fieldName: { '$regex': '^foo' } }
 
-          mongodb.update(query, 'test', { '$set': { fieldName: 'xxx' } }, {}, helper.getModelSchema()).then(result => {
+          mongodb.update({query: query, collection: 'test', update: { '$set': { fieldName: 'xxx' } }, schema: helper.getModelSchema()}).then(result => {
             should.exist(result.matchedCount)
             result.matchedCount.should.eql(2)
 
@@ -424,11 +422,11 @@ describe('MongoDB Operations', function () {
       }
 
       mongodb.connect().then(() => {
-        mongodb.insert(doc, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           let id = result[0]._id
           let update = { '$set': { fieldName: 'fooXX' } }
 
-          mongodb.delete({ _id: id }, 'test', helper.getModelSchema()).then(result => {
+          mongodb.delete({query: { _id: id }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             should.exist(result.deletedCount)
             result.deletedCount.should.eql(1)
 
@@ -453,11 +451,11 @@ describe('MongoDB Operations', function () {
       ]
 
       mongodb.connect().then(() => {
-        mongodb.insert(docs, 'test', {}, helper.getModelSchema()).then(result => {
+        mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
           let id = result[0]._id
           let query = { fieldName: { '$regex': '^foo' } }
 
-          mongodb.delete(query, 'test', helper.getModelSchema()).then(result => {
+          mongodb.delete({ query: query, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             should.exist(result.deletedCount)
             result.deletedCount.should.eql(2)
 
