@@ -22,21 +22,25 @@ coberturaBadger(opts, function parsingResults (err, badgeStatus) {
     console.log('An error occurred: ' + err.message)
   }
 
-  var readme = path.resolve(__dirname + '/../README.md')
-  var badgeUrl = badgeStatus.url // e.g. http://img.shields.io/badge/coverage-60%-yellow.svg
+  if (badgeStatus) {
+    var readme = path.resolve(__dirname + '/../README.md')
+    var badgeUrl = badgeStatus.url // e.g. http://img.shields.io/badge/coverage-60%-yellow.svg
 
-  // open the README.md and add this url
-  fs.readFile(readme, {encoding: 'utf-8'}, function (err, body) {
-    body = body.replace(/(!\[coverage\]\()(.+?)(\))/g, function (whole, a, b, c) {
-      return a + badgeUrl.replace('%', '%25') + '?style=flat-square' + c
+    // open the README.md and add this url
+    fs.readFile(readme, {encoding: 'utf-8'}, function (err, body) {
+      body = body.replace(/(!\[coverage\]\()(.+?)(\))/g, function (whole, a, b, c) {
+        return a + badgeUrl.replace('%', '%25') + '?style=flat-square' + c
+      })
+
+      fs.writeFile(readme, body, {encoding: 'utf-8'}, function (err) {
+        if (err) console.log(err.toString())
+
+        console.log('Coverage: ' + badgeStatus.overallPercent + '%\n')
+
+        console.log('Coverage badge successfully added to ' + readme + '\n')
+      })
     })
-
-    fs.writeFile(readme, body, {encoding: 'utf-8'}, function (err) {
-      if (err) console.log(err.toString())
-
-      console.log('Coverage: ' + badgeStatus.overallPercent + '%\n')
-
-      console.log('Coverage badge successfully added to ' + readme + '\n')
-    })
-  })
+  } else {
+    console.log('Coverage badge not created (badgeStatus === null)')
+  }
 })
