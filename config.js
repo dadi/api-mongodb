@@ -69,9 +69,6 @@ var conf = convict({
 var env = conf.get('env')
 conf.loadFile('./config/mongodb.' + env + '.json')
 
-// Perform validation
-conf.validate()
-
 // Load domain-specific configuration
 // conf.updateConfigDataForDomain = function(domain) {
 //   var domainConfig = './config/' + domain + '.json';
