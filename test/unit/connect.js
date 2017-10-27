@@ -27,7 +27,7 @@ describe('MongoDB Connection', function () {
       done()
     })
 
-    it('should use original database options if enableCollectionDatabases == true and specified database is not in config', function (done) {
+    it.skip('should use original database options if enableCollectionDatabases == true and specified database is not in config', function (done) {
       var mongodb = new MongoDBAdapter()
       mongodb.config.enableCollectionDatabases = true
       var connectionOptions = mongodb.getConnectionOptions({ database: 'xx' })
