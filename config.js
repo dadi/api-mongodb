@@ -37,6 +37,18 @@ var conf = convict({
     default: "",
     env: "DB_PASSWORD"
   },
+  authMechanism: {
+    doc: "If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.",
+    format: String,
+    default: "DEFAULT",
+    env: "DB_AUTH_MECHANISM"
+  },
+  authDatabase: {
+    doc: "The database to authenticate against when supplying a username and password",
+    format: String,
+    default: "admin",
+    env: "DB_AUTH_SOURCE"
+  },
   database: {
     doc: "",
     format: String,
