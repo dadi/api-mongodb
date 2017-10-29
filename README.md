@@ -118,6 +118,14 @@ The username used to connect to the specified database.
 
 The password used to connect to the specified database.
 
+##### authMechanism `String`
+
+If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.
+
+##### authDatabase `String`
+
+The database to authenticate against when supplying a username and password, defaults to "admin".
+
 ##### ssl `Boolean`
 
  * Default: `false`
