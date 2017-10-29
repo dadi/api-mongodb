@@ -37,6 +37,18 @@ var conf = convict({
     default: "",
     env: "DB_PASSWORD"
   },
+  authMechanism: {
+    doc: "",
+    format: String,
+    default: "DEFAULT",
+    env: "DB_AUTH_MECHANISM"
+  },
+  authDatabase: {
+    doc: "",
+    format: String,
+    default: "admin",
+    env: "DB_AUTH_SOURCE"
+  },
   database: {
     doc: "",
     format: String,
