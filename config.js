@@ -10,11 +10,6 @@ var conf = convict({
     env: "NODE_ENV",
     arg: "node_env"
   },
-  connectWithCollection: {
-    doc: "",
-    format: Boolean,
-    default: true,
-  },
   hosts: {
     doc: "",
     format: Array,
@@ -80,24 +75,5 @@ var conf = convict({
 // Load environment dependent configuration
 var env = conf.get('env')
 conf.loadFile('./config/mongodb.' + env + '.json')
-
-// Load domain-specific configuration
-// conf.updateConfigDataForDomain = function(domain) {
-//   var domainConfig = './config/' + domain + '.json';
-//   try {
-//     var stats = fs.statSync(domainConfig);
-//     // no error, file exists
-//     conf.loadFile(domainConfig);
-//     conf.validate({strict: false});
-//   }
-//   catch(err) {
-//     if (err.code === 'ENOENT') {
-//       //console.log('No domain-specific configuration file: ' + domainConfig);
-//     }
-//     else {
-//       console.log(err);
-//     }
-//   }
-// };
 
 module.exports = conf
