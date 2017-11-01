@@ -10,11 +10,6 @@ var conf = convict({
     env: "NODE_ENV",
     arg: "node_env"
   },
-  connectWithCollection: {
-    doc: "Informs API it should include the collection name to build the connection string",
-    format: Boolean,
-    default: true,
-  },
   hosts: {
     doc: "",
     format: Array,
