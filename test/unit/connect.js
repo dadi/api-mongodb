@@ -14,7 +14,7 @@ describe('MongoDB Connection', function () {
     done()
   })
 
-  afterEach(function(done) {
+  afterEach(function (done) {
     done()
   })
 
@@ -23,15 +23,23 @@ describe('MongoDB Connection', function () {
       var mongodb = new MongoDBAdapter()
       mongodb.config.enableCollectionDatabases = true
       var connectionOptions = mongodb.getConnectionOptions({ database: 'secondary' })
+      var connectionString = mongodb.constructConnectionString(connectionOptions)
+
       connectionOptions.database.should.eql('secondary')
+      connectionString.indexOf('secondary').should.be.above(0)
+
       done()
     })
 
-    it.skip('should use original database options if enableCollectionDatabases == true and specified database is not in config', function (done) {
+    it('should use original database options if enableCollectionDatabases == true and specified database is not in config', function (done) {
       var mongodb = new MongoDBAdapter()
       mongodb.config.enableCollectionDatabases = true
-      var connectionOptions = mongodb.getConnectionOptions({ database: 'xx' })
+      var connectionOptions = mongodb.getConnectionOptions({ database: 'testdb' })
+      var connectionString = mongodb.constructConnectionString(connectionOptions)
+
       connectionOptions.database.should.eql('testdb')
+      connectionString.indexOf('testdb').should.be.above(0)
+
       done()
     })
 
@@ -39,7 +47,10 @@ describe('MongoDB Connection', function () {
       var mongodb = new MongoDBAdapter()
       mongodb.config.enableCollectionDatabases = false
       var connectionOptions = mongodb.getConnectionOptions({ database: 'secondary' })
+      var connectionString = mongodb.constructConnectionString(connectionOptions)
+
       connectionOptions.database.should.eql('testdb')
+      connectionString.indexOf('testdb').should.be.above(0)
       done()
     })
   })
