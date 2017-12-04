@@ -11,24 +11,26 @@
   "ssl": false,
   "replicaSet": "",
   "enableCollectionDatabases": true,
-  "secondary": {
-    "hosts": [
-      {
-        "host": "127.0.0.1",
-        "port": 27018
-      }
-    ],
-    "username": "",
-    "password": "",
-    "replicaSet": "",
-    "ssl": false
-  },
-  "testdb": {
-    "hosts": [
-      {
-        "host": "127.0.0.1",
-        "port": 27017
-      }
-    ]
+  "databases": {
+    "secondary": {
+      "hosts": [
+        {
+          "host": "127.0.0.1",
+          "port": 27018
+        }
+      ],
+      "username": "",
+      "password": "",
+      "replicaSet": "",
+      "ssl": false
+    },
+    "testdb": {
+      "hosts": [
+        {
+          "host": "127.0.0.1",
+          "port": 27017
+        }
+      ]
+    }
   }
 }
