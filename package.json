@@ -22,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@dadi/metadata": "^1.0.0",
-    "convict": "4.0.0",
+    "convict": "4.0.2",
     "debug": "3.1.0",
     "mongodb": "2.2.x"
   },
