@@ -5,5 +5,6 @@ module.exports = require(
 )
 
 module.exports.settings = {
-  connectWithCollection: true
+  connectWithCollection: true,
+  internalProperties: ['_id']
 }
