@@ -40,6 +40,6 @@
     "should": "11.2.1",
     "sinon": "4.0.2",
     "snazzy": "7.0.0",
-    "standard": "8.x.x"
+    "standard": "^11.0.0"
   }
 }
