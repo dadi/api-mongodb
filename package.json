@@ -41,5 +41,14 @@
     "sinon": "4.0.2",
     "snazzy": "7.0.0",
     "standard": "8.x.x"
-  }
+  },
+  "greenkeeper": {
+    "ignore": [
+      "should",
+      "sinon",
+      "snazzy",
+      "standard",
+      "mocha"
+    ]
+  },
 }
