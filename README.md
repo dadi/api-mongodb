@@ -11,7 +11,7 @@
 ## Requirements
 
 * [DADI API](https://www.npmjs.com/package/@dadi/api) Version 3.0.0 or greater
-* a running MongoDB server
+* A running MongoDB server
 
 ## Usage
 
