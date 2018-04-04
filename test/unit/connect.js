@@ -203,6 +203,7 @@ describe('MongoDB Connection', function () {
       mongodb.config.replicaSet = 'test'
       mongodb.connect().then(() => {
       }).catch((err) => {
+        console.log('---> ERR:', err)
         should.exist(err)
         err.toString().should.eql('MongoError: no primary found in replicaset')
         mongodb.connectionString.should.eql('mongodb://127.0.0.1:27017/testdb?replicaSet=test&readPreference=secondaryPreferred')
