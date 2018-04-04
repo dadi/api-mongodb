@@ -101,7 +101,9 @@ describe('MongoDB Operations', function () {
           result.should.be.Array
           result.length.should.eql(1)
           should.exist(result[0].fieldName)
-          should.exist(result[0]._id);
+          should.exist(result[0]._id)
+          result[0]._id.length.should.eql(24)
+          Object.keys(result[0]._id).length.should.eql(24)
 
           (typeof result[0]._id).should.eql('object')
           done()
@@ -133,7 +135,13 @@ describe('MongoDB Operations', function () {
           (typeof result[0]._id).should.eql('object')
 
           result[0].fieldName.should.eql('foo')
+          result[0]._id.length.should.eql(24)
+          Object.keys(result[0]._id).length.should.eql(24)
+
           result[1].fieldName.should.eql('foo_1')
+          result[1]._id.length.should.eql(24)
+          Object.keys(result[1]._id).length.should.eql(24)
+
           done()
         }).catch((err) => {
           done(err)
@@ -175,6 +183,8 @@ describe('MongoDB Operations', function () {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0]._id.should.eql(inserted._id)
+            result.results[0]._id.length.should.eql(24)
+            Object.keys(result.results[0]._id).length.should.eql(24)
             done()
           })
         }).catch((err) => {
@@ -195,6 +205,8 @@ describe('MongoDB Operations', function () {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0]._id.should.eql(inserted._id)
+            result.results[0]._id.length.should.eql(24)
+            Object.keys(result.results[0]._id).length.should.eql(24)
             done()
           })
         }).catch((err) => {
