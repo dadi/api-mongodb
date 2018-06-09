@@ -31,7 +31,7 @@
     "url": "https://github.com/dadi/api-mongodb.git"
   },
   "devDependencies": {
-    "colors": "1.1.2",
+    "colors": "1.2.0",
     "env-test": "1.0.0",
     "istanbul": "1.1.0-alpha.1",
     "istanbul-cobertura-badger": "1.1.0",
