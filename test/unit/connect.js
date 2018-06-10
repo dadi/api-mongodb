@@ -210,4 +210,102 @@ describe('MongoDB Connection', function () {
       })
     })
   })
+
+  describe('error states', function () {
+    it('`insert` should reject when not connected', function (done) {
+      var mongodb = new MongoDBAdapter()
+      mongodb.connect().then(() => {
+        mongodb.readyState = 0
+
+        mongodb.insert({query: {}, collection: 'testdb', schema: {}}).then(() => {
+
+        }).catch(err => {
+          should.exist(err)
+          err.should.be.Error
+          err.message.should.eql('DB_DISCONNECTED')
+        })
+        done()
+      })
+    })
+
+    it('`search` should reject when not connected', function (done) {
+      var mongodb = new MongoDBAdapter()
+      mongodb.connect().then(() => {
+        mongodb.readyState = 0
+
+        mongodb.search({query: {}, collection: 'testdb', schema: {}}).then(() => {
+
+        }).catch(err => {
+          should.exist(err)
+          err.should.be.Error
+          err.message.should.eql('DB_DISCONNECTED')
+        })
+        done()
+      })
+    })
+
+    it('`update` should reject when not connected', function (done) {
+      var mongodb = new MongoDBAdapter()
+      mongodb.connect().then(() => {
+        mongodb.readyState = 0
+
+        mongodb.update({query: {}, collection: 'testdb', schema: {}}).then(() => {
+
+        }).catch(err => {
+          should.exist(err)
+          err.should.be.Error
+          err.message.should.eql('DB_DISCONNECTED')
+        })
+        done()
+      })
+    })
+
+    it('`find` should reject when not connected', function (done) {
+      var mongodb = new MongoDBAdapter()
+      mongodb.connect().then(() => {
+        mongodb.readyState = 0
+
+        mongodb.find({query: {}, collection: 'testdb', schema: {}}).then(() => {
+
+        }).catch(err => {
+          should.exist(err)
+          err.should.be.Error
+          err.message.should.eql('DB_DISCONNECTED')
+        })
+        done()
+      })
+    })
+
+    it('`delete` should reject when not connected', function (done) {
+      var mongodb = new MongoDBAdapter()
+      mongodb.connect().then(() => {
+        mongodb.readyState = 0
+
+        mongodb.delete({query: {}, collection: 'testdb', schema: {}}).then(() => {
+
+        }).catch(err => {
+          should.exist(err)
+          err.should.be.Error
+          err.message.should.eql('DB_DISCONNECTED')
+        })
+        done()
+      })
+    })
+
+    it('`stats` should reject when not connected', function (done) {
+      var mongodb = new MongoDBAdapter()
+      mongodb.connect().then(() => {
+        mongodb.readyState = 0
+
+        mongodb.stats('testdb', {}).then(() => {
+
+        }).catch(err => {
+          should.exist(err)
+          err.should.be.Error
+          err.message.should.eql('DB_DISCONNECTED')
+        })
+        done()
+      })
+    })
+  })
 })

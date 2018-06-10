@@ -31,11 +31,11 @@
     "url": "https://github.com/dadi/api-mongodb.git"
   },
   "devDependencies": {
-    "colors": "1.2.1",
+    "colors": "^1.2.1",
     "env-test": "1.0.0",
     "istanbul": "1.1.0-alpha.1",
     "istanbul-cobertura-badger": "1.3.1",
-    "mocha": "3.5.0",
+    "mocha": "5.2.0",
     "semantic-release": "15.1.4",
     "should": "11.2.1",
     "sinon": "4.4.3",
