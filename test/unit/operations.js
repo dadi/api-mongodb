@@ -1,17 +1,17 @@
-var EventEmitter = require('events').EventEmitter
-var MongoDBAdapter = require('../../lib')
-var querystring = require('querystring')
-var should = require('should')
-var url = require('url')
+const EventEmitter = require('events').EventEmitter
+const MongoDBAdapter = require('../../lib')
+const querystring = require('querystring')
+const should = require('should')
+const url = require('url')
 
-var config = require(__dirname + '/../../config')
-var helper = require(__dirname + '/helper')
+const config = require(__dirname + '/../../config')
+const helper = require(__dirname + '/helper')
 
 describe('MongoDB Operations', function () {
   this.timeout(2000)
 
   beforeEach(function (done) {
-    var mongodb = new MongoDBAdapter()
+    let mongodb = new MongoDBAdapter()
     mongodb.connect().then(() => {
       mongodb.dropDatabase('testdb').then(() => {
         done()
@@ -21,14 +21,14 @@ describe('MongoDB Operations', function () {
     })
   })
 
-  afterEach(function(done) {
+  afterEach(function (done) {
     done()
   })
 
   describe('indexes', function () {
     describe('create index', function () {
-      it('should create an index on the specified collection', function(done) {
-        var mongodb = new MongoDBAdapter()
+      it('should create an index on the specified collection', function (done) {
+        let mongodb = new MongoDBAdapter()
 
         let indexes = [
           {
@@ -53,8 +53,8 @@ describe('MongoDB Operations', function () {
     })
 
     describe('get index', function () {
-      it('should return a collections indexes', function(done) {
-        var mongodb = new MongoDBAdapter()
+      it('should return a collections indexes', function (done) {
+        let mongodb = new MongoDBAdapter()
 
         let indexes = [
           {
@@ -66,7 +66,6 @@ describe('MongoDB Operations', function () {
         mongodb.connect().then(() => {
           mongodb.index('test', indexes).then(result => {
             mongodb.getIndexes('test').then(result => {
-
 /*
 [ { v: 1, key: { _id: 1 }, name: '_id_', ns: 'testdb.test' },
   { v: 1,
@@ -89,10 +88,10 @@ describe('MongoDB Operations', function () {
   })
 
   describe('insert', function () {
-    it('should insert a single document and return inserted data', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should insert a single document and return inserted data', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = {
+      let doc = {
         fieldName: 'foo'
       }
 
@@ -112,10 +111,10 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should insert an array of documents and return inserted data', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should insert an array of documents and return inserted data', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var docs = [
+      let docs = [
         {
           fieldName: 'foo'
         },
@@ -129,7 +128,7 @@ describe('MongoDB Operations', function () {
           result.should.be.Array
           result.length.should.eql(2)
           should.exist(result[0].fieldName)
-          should.exist(result[0]._id);
+          should.exist(result[0]._id)
 
           result[0].fieldName.should.eql('foo')
           result[0]._id.length.should.eql(24)
@@ -150,10 +149,10 @@ describe('MongoDB Operations', function () {
   })
 
   describe('stats', function () {
-    it('should return stats for the specified collection', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should return stats for the specified collection', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = { fieldName: 'foo' }
+      let doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
         mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
@@ -170,14 +169,14 @@ describe('MongoDB Operations', function () {
   })
 
   describe('find', function () {
-    it('should find a single document by id', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should find a single document by id', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = { fieldName: 'foo' }
+      let doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
         mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
-          var inserted = result[0]
+          let inserted = result[0]
           mongodb.find({ query: { _id: inserted._id }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
@@ -192,15 +191,15 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should find a single document by query', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should find a single document by query', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = { fieldName: 'foo' }
+      let doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
         mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
-          var inserted = result[0]
-          mongodb.find({ query: { fieldName: inserted.fieldName }, collection: 'test', schema:  helper.getModelSchema()}).then(result => {
+          let inserted = result[0]
+          mongodb.find({ query: { fieldName: inserted.fieldName }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0]._id.should.eql(inserted._id)
@@ -214,14 +213,14 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should translate query using $containsAny', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should translate query using $containsAny', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
+      let docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
         mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
-          mongodb.find({query: { fieldName: { '$containsAny': ['foo1'] } }, collection: 'test', schema:  helper.getModelSchema()}).then(result => {
+          mongodb.find({query: { fieldName: { '$containsAny': ['foo1'] } }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             result.results.should.be.Array
             result.results.length.should.eql(1)
             result.results[0].fieldName.should.eql('foo1')
@@ -233,10 +232,10 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should translate query using regular expressions', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should translate query using regular expressions', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
+      let docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
         mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
@@ -252,14 +251,14 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should return metadata when returning documents', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should return metadata when returning documents', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = { fieldName: 'foo' }
+      let doc = { fieldName: 'foo' }
 
       mongodb.connect().then(() => {
         mongodb.insert({data: doc, collection: 'test', schema: helper.getModelSchema()}).then(result => {
-          var inserted = result[0]
+          let inserted = result[0]
           mongodb.find({ query: { fieldName: inserted.fieldName }, collection: 'test', schema: helper.getModelSchema()}).then(result => {
             should.exist(result.metadata)
             result.metadata.totalCount.should.eql(1)
@@ -272,14 +271,13 @@ describe('MongoDB Operations', function () {
     })
 
     it('should perform aggregation query when given a JSON array', function (done) {
-      var mongodb = new MongoDBAdapter()
+      let mongodb = new MongoDBAdapter()
 
-      var docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
+      let docs = [{ fieldName: 'foo1' }, { fieldName: 'foo2' }]
 
       mongodb.connect().then(() => {
         mongodb.insert({data: docs, collection: 'test', schema: helper.getModelSchema()}).then(result => {
-
-          var query = [
+          let query = [
             { $match: { fieldName: 'foo1' } }
           ]
 
@@ -298,10 +296,10 @@ describe('MongoDB Operations', function () {
     })
 
     it('should return grouped result set when using $group in an aggregation query', function (done) {
-      var mongodb = new MongoDBAdapter()
-      var docs = []
+      let mongodb = new MongoDBAdapter()
+      let docs = []
 
-      for (var i = 0; i < 10; ++i) {
+      for (let i = 0; i < 10; ++i) {
         docs.push({
           field1: ((Math.random() * 10) | 1).toString(),
           field2: (Math.random() * 10) | 1
@@ -310,8 +308,7 @@ describe('MongoDB Operations', function () {
 
       mongodb.connect().then(() => {
         mongodb.insert({data: docs, collection: 'test', schema: helper.getExtendedModelSchema()}).then(result => {
-
-          var query = [
+          let query = [
             {
               $group: {
                 _id: null,
@@ -336,10 +333,10 @@ describe('MongoDB Operations', function () {
     })
 
     it('should return normal result set when only using $match in an aggregation query', function (done) {
-      var mongodb = new MongoDBAdapter()
-      var docs = []
+      let mongodb = new MongoDBAdapter()
+      let docs = []
 
-      for (var i = 0; i < 10; ++i) {
+      for (let i = 0; i < 10; ++i) {
         docs.push({
           field1: ((Math.random() * 10) | 1).toString(),
           field2: (Math.random() * 10) | 1
@@ -348,8 +345,7 @@ describe('MongoDB Operations', function () {
 
       mongodb.connect().then(() => {
         mongodb.insert({data: docs, collection: 'test', schema: helper.getExtendedModelSchema()}).then(result => {
-
-          var query = [
+          let query = [
             { $match: { 'field2': { '$gte': 1 } } },
             { $limit: 2 }
           ]
@@ -370,10 +366,10 @@ describe('MongoDB Operations', function () {
   })
 
   describe('update', function () {
-    it('should update a single document by id and return count', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should update a single document by id and return count', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = {
+      let doc = {
         fieldName: 'foo'
       }
 
@@ -394,10 +390,10 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should update many documents by query and return count', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should update many documents by query and return count', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var docs = [
+      let docs = [
         {
           fieldName: 'foo'
         },
@@ -425,10 +421,10 @@ describe('MongoDB Operations', function () {
   })
 
   describe('delete', function () {
-    it('should delete a single document by id and return count', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should delete a single document by id and return count', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var doc = {
+      let doc = {
         fieldName: 'foo'
       }
 
@@ -449,10 +445,10 @@ describe('MongoDB Operations', function () {
       })
     })
 
-    it('should delete many documents by query and return count', function(done) {
-      var mongodb = new MongoDBAdapter()
+    it('should delete many documents by query and return count', function (done) {
+      let mongodb = new MongoDBAdapter()
 
-      var docs = [
+      let docs = [
         {
           fieldName: 'foo'
         },
@@ -471,6 +467,173 @@ describe('MongoDB Operations', function () {
             result.deletedCount.should.eql(2)
 
             done()
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+  })
+
+  describe('search', function () {
+    it('should find records in the search index collection that match a single term being searched for', function (done) {
+      let mongodb = new MongoDBAdapter()
+
+      let modelSchema = helper.getModelSchema()
+      modelSchema.fieldName.search = {
+        weight: 2
+      }
+
+      let document = {
+        fieldName: 'Beyond the Valley of the Dolls'
+      }
+
+      mongodb.connect().then(() => {
+        // insert document
+        mongodb.insert({data: document, collection: 'test', schema: modelSchema}).then(result => {
+          let documentId = result[0]._id
+
+          // insert tokenised words
+          let words = [
+            { 'word': 'beyond' },
+            { 'word': 'valley' },
+            { 'word': 'dolls' },
+            { 'word': 'second' },
+            { 'word': 'third' },
+            { 'word': 'escape' }
+          ]
+
+          mongodb.insert({data: words, collection: 'words', schema: helper.getWordSchema()}).then(result => {
+            let wordId = result.find(word => word.word === 'valley')._id
+
+            // insert search reference document
+            let searchDocument = {
+              weight: 0.6137056388801094,
+              word: wordId.toString(),
+              document: documentId.toString()
+            }
+
+            mongodb.insert({data: searchDocument, collection: 'testSearch', schema: helper.getSearchSchema()}).then(result => {
+              // call search method to get document IDs for retrieval
+              mongodb.search({words: [wordId.toString()], collection: 'testSearch', schema: helper.getSearchSchema()}).then(result => {
+                result.should.be.instanceOf(Array)
+                result.length.should.eql(1)
+                result[0]._id.document.should.eql(documentId)
+                done()
+              })
+            }).catch((err) => {
+              done(err)
+            })
+          }).catch((err) => {
+            done(err)
+          })
+        }).catch((err) => {
+          done(err)
+        })
+      })
+    })
+
+    it('should find records in the search index collection that match multiple terms being searched for', function (done) {
+      let mongodb = new MongoDBAdapter()
+
+      let modelSchema = helper.getModelSchema()
+      modelSchema.fieldName.search = {
+        weight: 2
+      }
+
+      let documents = [
+        {
+          fieldName: 'Beyond the Valley of the Dolls'
+        },
+        {
+          fieldName: 'Escape from the Valley'
+        },
+        {
+          fieldName: 'The Dolls House'
+        }
+      ]
+
+      mongodb.connect().then(() => {
+        // insert document
+        mongodb.insert({data: documents, collection: 'test', schema: modelSchema}).then(result => {
+          let insertedDocuments = result
+
+          // insert tokenised words
+          let words = [
+            { 'word': 'beyond' },
+            { 'word': 'valley' },
+            { 'word': 'dolls' },
+            { 'word': 'second' },
+            { 'word': 'third' },
+            { 'word': 'escape' },
+            { 'word': 'house' },
+            { 'word': 'from' }
+          ]
+
+          mongodb.insert({data: words, collection: 'words', schema: helper.getWordSchema()}).then(insertedWords => {
+            // insert search reference document
+            let searchDocuments = [
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'valley')._id,
+                document: documents.find(document => document.fieldName === 'Beyond the Valley of the Dolls')._id
+              },
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'dolls')._id,
+                document: documents.find(document => document.fieldName === 'Beyond the Valley of the Dolls')._id
+              },
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'beyond')._id,
+                document: documents.find(document => document.fieldName === 'Beyond the Valley of the Dolls')._id
+              },
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'valley')._id,
+                document: documents.find(document => document.fieldName === 'Escape from the Valley')._id
+              },
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'escape')._id,
+                document: documents.find(document => document.fieldName === 'Escape from the Valley')._id
+              },
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'dolls')._id,
+                document: documents.find(document => document.fieldName === 'The Dolls House')._id
+              },
+              {
+                weight: 0.6137056388801094,
+                word: insertedWords.find(word => word.word === 'house')._id,
+                document: documents.find(document => document.fieldName === 'The Dolls House')._id
+              }
+            ]
+
+            mongodb.insert({data: searchDocuments, collection: 'testSearch', schema: helper.getSearchSchema()}).then(result => {
+              // call search method to get document IDs for retrieval
+              let query = [insertedWords.find(word => word.word === 'dolls')._id, insertedWords.find(word => word.word === 'house')._id]
+
+              mongodb.search({words: query, collection: 'testSearch', schema: helper.getSearchSchema()}).then(result => {
+                result.should.be.instanceOf(Array)
+                result.length.should.eql(2)
+
+                function getDocumentId (title) {
+                  return insertedDocuments.find(document => document.fieldName === title)._id
+                }
+
+                let documentId1 = getDocumentId('The Dolls House')
+                let documentId2 = getDocumentId('Beyond the Valley of the Dolls')
+
+                should.exist(result.find(document => document._id.document === documentId1))
+                should.exist(result.find(document => document._id.document === documentId2))
+                done()
+              })
+            }).catch((err) => {
+              done(err)
+            })
+          }).catch((err) => {
+            done(err)
           })
         }).catch((err) => {
           done(err)

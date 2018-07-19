@@ -15,7 +15,7 @@ describe('MongoDB', function () {
     done()
   })
 
-  afterEach(function(done) {
+  afterEach(function (done) {
     done()
   })
 
@@ -54,6 +54,20 @@ describe('MongoDB', function () {
   })
 
   describe('query utils', function () {
+    describe('encodeOptions', function () {
+      it('should return empty string if options is empty', function (done) {
+        new MongoDBAdapter().encodeOptions({}).should.eql('')
+        done()
+      })
+    })
+
+    describe('hosts', function () {
+      it('should construct a host string from array', function (done) {
+        new MongoDBAdapter().hosts([{host: '127.0.0.1', port: 3000 }, {host: '127.0.0.2' }]).should.eql('127.0.0.1:3000,127.0.0.2:27017')
+        done()
+      })
+    })
+
     describe('convertObjectIdsForSave', function () {
       it('should be a method', function (done) {
         new MongoDBAdapter().convertObjectIdsForSave.should.be.Function
