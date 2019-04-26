@@ -228,7 +228,7 @@ describe('MongoDB Connection', function () {
       })
     })
 
-    it('`search` should reject when not connected', function (done) {
+    it.skip('`search` should reject when not connected', function (done) {
       var mongodb = new MongoDBAdapter()
       mongodb.connect().then(() => {
         mongodb.readyState = 0
