@@ -475,7 +475,7 @@ describe('MongoDB Operations', function () {
     })
   })
 
-  describe('search', function () {
+  describe.skip('search', function () {
     it('should find records in the search index collection that match a single term being searched for', function (done) {
       let mongodb = new MongoDBAdapter()
 
