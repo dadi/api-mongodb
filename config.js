@@ -5,25 +5,25 @@ const DATABASE_SCHEMA = {
     doc: 'The database to authenticate against when supplying a username and password',
     format: String,
     default: '',
-    env: 'DB_AUTH_SOURCE'
+    envTemplate: 'DB_{database}_AUTH_SOURCE'
   },
   authMechanism: {
     doc: 'If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.',
     format: String,
     default: '',
-    env: 'DB_AUTH_MECHANISM'
+    envTemplate: 'DB_{database}_AUTH_MECHANISM'
   },
   maxPoolSize: {
     doc: 'The maximum number of connections in the connection pool',
     format: Number,
     default: 0,
-    env: 'DB_MAX_POOL'
+    envTemplate: 'DB_{database}_MAX_POOL'
   },
   password: {
     doc: '',
     format: String,
     default: '',
-    env: 'DB_PASSWORD'
+    envTemplate: 'DB_{database}_PASSWORD'
   },
   readPreference: {
     doc: 'Choose how MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/',
@@ -44,7 +44,7 @@ const DATABASE_SCHEMA = {
     doc: '',
     format: String,
     default: '',
-    env: 'DB_USERNAME'
+    envTemplate: 'DB_{database}_USERNAME'
   }
 }
 
@@ -90,6 +90,23 @@ Object.keys(databases).forEach(databaseName => {
 
   databaseConfig.load(databases[databaseName])
   databaseConfig.validate()
+
+  const schema = databaseConfig.getSchema().properties
+
+  // Listening for database-specific environment variables.
+  // e.g. DB_testdb_USERNAME
+  Object.keys(schema).forEach(key => {
+    if (typeof schema[key].envTemplate === 'string') {
+      const envVar = schema[key].envTemplate.replace(
+        '{database}',
+        databaseName
+      )
+
+      if (process.env[envVar]) {
+        mainConfig.set(`databases.${databaseName}.${key}`, process.env[envVar])
+      }
+    }
+  })
 })
 
 module.exports = mainConfig
