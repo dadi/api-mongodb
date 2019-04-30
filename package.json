@@ -43,14 +43,5 @@
     "snazzy": "7.0.0",
     "standard": "8.x.x",
     "travis-deploy-once": "^5.0.1"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "should",
-      "sinon",
-      "snazzy",
-      "standard",
-      "mocha"
-    ]
   }
 }
