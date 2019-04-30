@@ -14,7 +14,7 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "standard 'lib/**/*.js' | snazzy 'lib/**/*.js' && env NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov ./node_modules/mocha/bin/_mocha test && ./node_modules/.bin/nyc report",
+    "test": "rm -rf config/mongodb.test.json && standard 'lib/**/*.js' | snazzy 'lib/**/*.js' && env NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov ./node_modules/mocha/bin/_mocha test && ./node_modules/.bin/nyc report",
     "posttest": "./scripts/coverage.js",
     "semantic-release": "semantic-release",
     "travis-deploy-once": "travis-deploy-once"

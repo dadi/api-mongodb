@@ -23,20 +23,6 @@ describe('MongoDB', function () {
       done()
     })
 
-    it('should load config if no options supplied', function (done) {
-      var mongodb = new MongoDBAdapter()
-      should.exist(mongodb.config)
-      mongodb.config.database.should.eql('testdb')
-      done()
-    })
-
-    it('should load config from options supplied', function (done) {
-      var mongodb = new MongoDBAdapter({ database: 'xx' })
-      should.exist(mongodb.config)
-      mongodb.config.database.should.eql('xx')
-      done()
-    })
-
     it('should have readyState == 0 when initialised', function (done) {
       var mongodb = new MongoDBAdapter()
       mongodb.readyState.should.eql(0)

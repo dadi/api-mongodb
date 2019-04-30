@@ -1,3 +1,7 @@
+const config = require('../../config')
+const fs = require('fs')
+const path = require('path')
+
 module.exports.getModelSchema = function () {
   return {
     fieldName: {
@@ -94,4 +98,30 @@ module.exports.getSearchSchema = function () {
       ]
     }
   }
+}
+
+module.exports.setConfig = function (data) {
+  const payload = JSON.stringify(data, null, 2)
+  const filePath = path.resolve(__dirname, '../../config/mongodb.test.json')
+  const currentContent = fs.readFileSync(filePath, 'utf8')
+
+  fs.writeFileSync(filePath, payload)
+
+  const restoreFn = () => new Promise(resolve => {
+    fs.writeFileSync(filePath, currentContent)
+
+    setTimeout(() => {
+      config.loadConfig()
+
+      resolve()
+    }, 200)
+  })
+
+  return new Promise(resolve => {
+    setTimeout(() => {
+      config.loadConfig()
+
+      resolve(restoreFn)
+    }, 500)
+  })
 }

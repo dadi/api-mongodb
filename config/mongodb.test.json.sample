@@ -1,26 +1,39 @@
 {
   "database": "testdb",
-  "enableCollectionDatabases": true,
-  "databases": {
-    "secondary": {
-      "hosts": [
-        {
-          "host": "127.0.0.1",
-          "port": 27018
-        }
-      ],
-      "username": "",
-      "password": "",
-      "replicaSet": "",
-      "ssl": false
+  "databases": [
+    {
+      "id": "authdb",
+      "hosts": "127.0.0.1:27017",
+      "username": "johndoe",
+      "password": "topsecret"
     },
-    "testdb": {
-      "hosts": [
-        {
-          "host": "127.0.0.1",
-          "port": 27017
-        }
-      ]
-    }
-  }
+    {
+      "id": "defaultdb",
+      "hosts": "127.0.0.1:27017"
+    },
+    {
+      "id": "invaliddb",
+      "hosts": "127.0.0.1:27019"
+    },
+    {
+      "id": "replicadb",
+      "hosts": "127.0.0.1:27017",
+      "replicaSet": "rs0"
+    },
+    {
+      "id": "somedb",
+      "hosts": "127.0.0.1:27017",
+      "username": "johndoe",
+      "password": "topsecret"
+    },
+    {
+      "id": "secondary",
+      "hosts": "127.0.0.1:27018"
+    },
+    {
+      "id": "testdb",
+      "hosts": "127.0.0.1:27017"
+    }  
+  ],
+  "enableCollectionDatabases": true
 }
