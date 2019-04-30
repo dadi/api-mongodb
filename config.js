@@ -1,4 +1,5 @@
 const convict = require('convict')
+const fs = require('fs')
 
 const DATABASE_SCHEMA = {
   authDatabase: {
@@ -12,6 +13,17 @@ const DATABASE_SCHEMA = {
     format: String,
     default: '',
     envTemplate: 'DB_{database}_AUTH_MECHANISM'
+  },
+  hosts: {
+    default: '',
+    doc: 'Database hosts',
+    format: String,
+    envTemplate: 'DB_{database}_HOSTS'
+  },
+  id: {
+    default: '',
+    doc: 'Database unique identifier',
+    format: String
   },
   maxPoolSize: {
     doc: 'The maximum number of connections in the connection pool',
@@ -56,9 +68,9 @@ const MAIN_SCHEMA = {
     format: String
   },
   databases: {
-    default: {},
+    default: [],
     doc: 'Configuration block for each of the databases used throughout the application',
-    format: Object
+    format: Array
   },
   enableCollectionDatabases: {
     default: false,
@@ -74,39 +86,127 @@ const MAIN_SCHEMA = {
   }
 }
 
-const mainConfig = convict(MAIN_SCHEMA)
+function transformLegacyDatabaseBlock (name, block) {
+  const hosts = block.hosts.map(({host, port}) => {
+    return `${host}:${port || 27017}`
+  }).join(',')
 
-// Load environment dependent configuration.
-const environment = mainConfig.get('env')
+  let newBlock = {
+    id: name
+  }
 
-mainConfig.loadFile(`./config/mongodb.${environment}.json`)
-mainConfig.validate()
-
-// Validating databases.
-const databases = mainConfig.get('databases')
-
-Object.keys(databases).forEach(databaseName => {
-  const databaseConfig = convict(DATABASE_SCHEMA)
-
-  databaseConfig.load(databases[databaseName])
-  databaseConfig.validate()
-
-  const schema = databaseConfig.getSchema().properties
-
-  // Listening for database-specific environment variables.
-  // e.g. DB_testdb_USERNAME
-  Object.keys(schema).forEach(key => {
-    if (typeof schema[key].envTemplate === 'string') {
-      const envVar = schema[key].envTemplate.replace(
-        '{database}',
-        databaseName
-      )
-
-      if (process.env[envVar]) {
-        mainConfig.set(`databases.${databaseName}.${key}`, process.env[envVar])
-      }
+  Object.keys(block).forEach(key => {
+    if (block[key] !== undefined && block[key] !== '') {
+      newBlock[key] = block[key]
     }
   })
-})
+
+  newBlock.hosts = hosts
+
+  return newBlock
+}
+
+let mainConfig = convict(MAIN_SCHEMA)
+
+const loadConfig = () => {
+  // Load environment dependent configuration.
+  const environment = mainConfig.get('env')
+  const filePath = `./config/mongodb.${environment}.json`
+
+  try {
+    const configFile = fs.readFileSync(filePath, 'utf8')
+    const data = JSON.parse(configFile)
+
+    // Checking for legacy database blocks, which consist of objects
+    // where keys are database names.
+    if (data.databases && !Array.isArray(data.databases)) {
+      data.databases = Object.keys(data.databases).map(name => {
+        return transformLegacyDatabaseBlock(name, data.databases[name])
+      })
+
+      const exampleConfig = JSON.stringify({
+        databases: data.databases
+      }, null, 2)
+
+      console.warn(
+        `The current MongoDB configuration uses a \`databases\` object. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
+      )
+    }
+
+    data.databases = data.databases || []
+
+    const defaultDatabaseBlock = data.databases.find(({id}) => {
+      return id === data.database
+    })
+
+    // Checking for legacy syntax, where database details for the default
+    // database are declared at the root level, instead of inside the
+    // `databases` property.
+    if (!defaultDatabaseBlock && Array.isArray(data.hosts)) {
+      const legacyBlock = {
+        authDatabase: data.authDatabase,
+        authMechanism: data.authMechanism,
+        hosts: data.hosts,
+        maxPoolSize: data.maxPoolSize,
+        password: data.password,
+        readPreference: data.readPreference,
+        replicaSet: data.replicaSet,
+        ssl: data.ssl,
+        username: data.username,
+      }
+      const newBlock = transformLegacyDatabaseBlock(data.database, legacyBlock)
+      
+      data.databases.push(newBlock)
+
+      const exampleConfig = JSON.stringify({
+        databases: [newBlock]
+      }, null, 2)
+
+      console.warn(
+        `The current MongoDB configuration uses a \`hosts\` array at the root level. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
+      )
+    }
+
+    mainConfig.load(data)
+    mainConfig.validate()
+
+    // Validating databases.
+    const databases = mainConfig.get('databases')
+    
+    databases.forEach((database, databaseIndex) => {
+      const databaseConfig = convict(DATABASE_SCHEMA)
+    
+      databaseConfig.load(database)
+      databaseConfig.validate()
+    
+      const schema = databaseConfig.getSchema().properties
+    
+      // Listening for database-specific environment variables.
+      // e.g. DB_testdb_USERNAME
+      Object.keys(schema).forEach(key => {
+        if (typeof schema[key].envTemplate === 'string') {
+          const envVar = schema[key].envTemplate.replace(
+            '{database}',
+            databaseIndex
+          )
+
+          if (process.env[envVar]) {
+            mainConfig.set(
+              `databases[${databaseIndex}].${key}`,
+              process.env[envVar]
+            )
+          }
+        }
+      })
+    })
+
+    return mainConfig
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+loadConfig()
 
 module.exports = mainConfig
+module.exports.loadConfig = loadConfig
