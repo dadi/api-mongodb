@@ -3,16 +3,22 @@ const fs = require('fs')
 
 const DATABASE_SCHEMA = {
   authDatabase: {
-    doc: 'The database to authenticate against when supplying a username and password',
-    format: String,
     default: '',
-    envTemplate: 'DB_{database}_AUTH_SOURCE'
+    doc: 'The database to authenticate against when supplying a username and password',
+    envTemplate: 'DB_{database}_AUTH_SOURCE',
+    format: String
   },
   authMechanism: {
-    doc: 'If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.',
-    format: String,
     default: '',
-    envTemplate: 'DB_{database}_AUTH_MECHANISM'
+    doc: 'If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.',
+    envTemplate: 'DB_{database}_AUTH_MECHANISM',
+    format: String
+  },
+  default: {
+    default: false,
+    doc: '',
+    envTemplate: 'DB_{database}_DEFAULT',
+    format: Boolean
   },
   hosts: {
     default: '',
@@ -61,12 +67,6 @@ const DATABASE_SCHEMA = {
 }
 
 const MAIN_SCHEMA = {
-  database: {
-    default: 'api',
-    doc: 'The name of the default database to be used',
-    env: 'DB_NAME',
-    format: String
-  },
   databases: {
     default: [],
     doc: 'Configuration block for each of the databases used throughout the application',
@@ -135,14 +135,34 @@ const loadConfig = () => {
 
     data.databases = data.databases || []
 
-    const defaultDatabaseBlock = data.databases.find(({id}) => {
-      return id === data.database
+    let defaultDatabase = data.databases.find(database => {
+      return database.default === true
     })
+
+    // Checking for the legacy `database` property, which indicates the
+    // default database.
+    if (defaultDatabase === undefined && data.database !== undefined) {
+      defaultDatabase = data.databases.find((database, index) => {
+        if (database.id === data.database) {
+          data.databases[index].default = true
+
+          const exampleConfig = JSON.stringify({
+            databases: data.databases
+          }, null, 2)
+    
+          console.warn(
+            `The current MongoDB configuration uses a \`database\` property to indicate the default database. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
+          )
+
+          return true
+        }
+      })
+    }
 
     // Checking for legacy syntax, where database details for the default
     // database are declared at the root level, instead of inside the
     // `databases` property.
-    if (!defaultDatabaseBlock && Array.isArray(data.hosts)) {
+    if (!defaultDatabase && Array.isArray(data.hosts)) {
       const legacyBlock = {
         authDatabase: data.authDatabase,
         authMechanism: data.authMechanism,
