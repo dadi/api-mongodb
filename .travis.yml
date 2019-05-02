@@ -17,4 +17,3 @@ branches:
     - /^v\d+\.\d+\.\d+$/
 services:
   - mongodb
-before_install: if [[ `npm -v` != 5* ]]; then npm i -g npm@latest; fi
