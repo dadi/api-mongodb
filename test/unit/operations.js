@@ -10,14 +10,11 @@ const helper = require(__dirname + '/helper')
 describe('MongoDB Operations', function () {
   this.timeout(2000)
 
-  beforeEach(function (done) {
-    let mongodb = new MongoDBAdapter()
-    mongodb.connect().then(() => {
-      mongodb.dropDatabase('testdb').then(() => {
-        done()
-      })
-    }).catch((err) => {
-      done(err)
+  beforeEach(() => {
+    const mongodb = new MongoDBAdapter()
+
+    return mongodb.connect().then(() => {
+      return mongodb.dropDatabase('defaultdb')
     })
   })
 
@@ -475,7 +472,7 @@ describe('MongoDB Operations', function () {
     })
   })
 
-  describe('search', function () {
+  describe.skip('search', function () {
     it('should find records in the search index collection that match a single term being searched for', function (done) {
       let mongodb = new MongoDBAdapter()
 
