@@ -5,9 +5,9 @@ cache:
 notifications:
   email: false
 node_js:
-  - '10'
   - '8'
-  - '6'
+  - '10'
+  - 'lts/*'
 before_script:
   - npm prune
 after_success:
@@ -17,4 +17,3 @@ branches:
     - /^v\d+\.\d+\.\d+$/
 services:
   - mongodb
-before_install: if [[ `npm -v` != 5* ]]; then npm i -g npm@latest; fi
