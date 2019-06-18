@@ -10,15 +10,6 @@ var helper = require(__dirname + '/helper')
 describe('MongoDB', function () {
   this.timeout(2000)
 
-  beforeEach(function (done) {
-      // connection.resetConnections();
-    done()
-  })
-
-  afterEach(function (done) {
-    done()
-  })
-
   describe('constructor', function () {
     it('should be exposed', function (done) {
       MongoDBAdapter.should.be.Function
@@ -32,20 +23,6 @@ describe('MongoDB', function () {
       done()
     })
 
-    it('should load config if no options supplied', function (done) {
-      var mongodb = new MongoDBAdapter()
-      should.exist(mongodb.config)
-      mongodb.config.database.should.eql('testdb')
-      done()
-    })
-
-    it('should load config from options supplied', function (done) {
-      var mongodb = new MongoDBAdapter({ database: 'xx' })
-      should.exist(mongodb.config)
-      mongodb.config.database.should.eql('xx')
-      done()
-    })
-
     it('should have readyState == 0 when initialised', function (done) {
       var mongodb = new MongoDBAdapter()
       mongodb.readyState.should.eql(0)
@@ -54,20 +31,6 @@ describe('MongoDB', function () {
   })
 
   describe('query utils', function () {
-    describe('encodeOptions', function () {
-      it('should return empty string if options is empty', function (done) {
-        new MongoDBAdapter().encodeOptions({}).should.eql('')
-        done()
-      })
-    })
-
-    describe('hosts', function () {
-      it('should construct a host string from array', function (done) {
-        new MongoDBAdapter().hosts([{host: '127.0.0.1', port: 3000 }, {host: '127.0.0.2' }]).should.eql('127.0.0.1:3000,127.0.0.2:27017')
-        done()
-      })
-    })
-
     describe('convertObjectIdsForSave', function () {
       it('should be a method', function (done) {
         new MongoDBAdapter().convertObjectIdsForSave.should.be.Function
@@ -121,93 +84,45 @@ describe('MongoDB', function () {
     //   not convert (sub query) Strings to ObjectIDs when a field type is Object
     //   not convert (dot notation) Strings to ObjectIDs when a field type is Object
     describe('`createObjectIdFromString` method', function () {
-      it('should convert Strings to ObjectIDs when a field type is ObjectID', function (done) {
-        var fields = helper.getModelSchema()
-        var schema = {}
-        schema.fields = fields
+      it('should convert Strings to ObjectIDs when the field is _id', () => {
+        const mongodb = new MongoDBAdapter()
+        const query1 = {field1: 'hello'}
+        const query2 = {field1: '55cb1658341a0a804d4dadcc'}
+        const query3 = {_id: '55cb1658341a0a804d4dadcc'}
+        const query4 = {_id: {$ne: '55cb1658341a0a804d4dadcc'}}
+        const query5 = {_id: {$in: ['55cb1658341a0a804d4dadca', '55cb1658341a0a804d4dadcb']}}
 
-        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
-          type: 'ObjectID',
-          required: false
-        })
+        const newQuery1 = mongodb.createObjectIdFromString(query1)
+        const newQuery2 = mongodb.createObjectIdFromString(query2)
+        const newQuery3 = mongodb.createObjectIdFromString(query3)
+        const newQuery4 = mongodb.createObjectIdFromString(query4)
+        const newQuery5 = mongodb.createObjectIdFromString(query5)
 
-        var query = { 'field2': '55cb1658341a0a804d4dadcc' }
-
-        var mongodb = new MongoDBAdapter()
-        query = mongodb.createObjectIdFromString(query, schema.fields)
-
-        var type = typeof query.field2
-        type.should.eql('object')
-
-        done()
-      })
-
-      it('should allow $in query to convert Strings to ObjectIDs for Reference fields', function (done) {
-        var fields = helper.getModelSchema()
-        var schema = {}
-        schema.fields = fields
-
-        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
-          type: 'Reference',
-          required: false
-        })
-
-        var query = { 'field2': { '$in': ['55cb1658341a0a804d4dadcc'] } }
-
-        var mongodb = new MongoDBAdapter()
-        query = mongodb.createObjectIdFromString(query, schema.fields)
-
-        var type = typeof query.field2
-        type.should.eql('object')
-
-        done()
+        newQuery1.field1.should.be.type('string')
+        newQuery2.field1.should.be.type('string')
+        newQuery3._id.should.be.type('object')
+        newQuery4._id.$ne.should.be.type('object')
+        newQuery5._id.$in[0].should.be.type('object')
+        newQuery5._id.$in[1].should.be.type('object')
       })
 
       it('should not convert (sub query) Strings to ObjectIDs when a field type is Object', function (done) {
-        var fields = helper.getModelSchema()
-        var schema = {}
-        schema.fields = fields
-
-        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
-          type: 'ObjectID',
-          required: false
-        })
-
-        schema.fields.field3 = Object.assign({}, schema.fields.fieldName, {
-          type: 'Object',
-          required: false
-        })
-
-        var query = { 'field3': {'id': '55cb1658341a0a804d4dadcc' }}
+        var query = { 'field3': {'_id': '55cb1658341a0a804d4dadcc' }}
 
         var mongodb = new MongoDBAdapter()
-        query = mongodb.createObjectIdFromString(query, schema.fields)
+        query = mongodb.createObjectIdFromString(query)
 
-        var type = typeof query.field3.id
+        var type = typeof query.field3._id
         type.should.eql('string')
 
         done()
       })
 
       it('should not convert (dot notation) Strings to ObjectIDs when a field type is Object', function (done) {
-        var fields = helper.getModelSchema()
-        var schema = {}
-        schema.fields = fields
-
-        schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
-          type: 'ObjectID',
-          required: false
-        })
-
-        schema.fields.field3 = Object.assign({}, schema.fields.fieldName, {
-          type: 'Object',
-          required: false
-        })
-
-        var query = { 'field3.id': '55cb1658341a0a804d4dadcc' }
+        var query = { 'field3._id': '55cb1658341a0a804d4dadcc' }
 
         var mongodb = new MongoDBAdapter()
-        query = mongodb.createObjectIdFromString(query, schema.fields)
+        query = mongodb.createObjectIdFromString(query)
 
         var type = typeof query[Object.keys(query)[0]]
         type.should.eql('string')
