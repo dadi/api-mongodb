@@ -5,7 +5,6 @@
 [![Build Status](https://travis-ci.org/dadi/api-mongodb.svg?branch=master)](https://travis-ci.org/dadi/api-mongodb)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
-[![Known Vulnerabilities](https://snyk.io/test/github/dadi/api-mongodb/badge.svg)](https://snyk.io/test/github/dadi/api-mongodb)
 
 ## Requirements
 
@@ -74,130 +73,163 @@ Specifies the MongoDB database(s) to connect to.
 
 ```json
 {
-  "hosts": [
+  "enableCollectionDatabases": false,
+  "databases": [
     {
-      "host": "127.0.0.1",
-      "port": 27017
+      "id": "authdb",
+      "hosts": "127.0.0.1:27017",
+      "username": "johndoe",
+      "password": "topsecret"
+    },
+    {
+      "default": true,
+      "id": "secondary",
+      "hosts": "127.0.0.1:27018"
     }
-  ],
-  "database": "myApi",
-  "username": "apiUser",
-  "password": "apiPassword",
-  "ssl": false,
-  "replicaSet": false,
-  "enableCollectionDatabases": false
+  ]
 }
 ```
 
 #### Configuration Properties
 
-##### hosts
+##### `enableCollectionDatabases`
 
-An array of database hosts to connect to; each array entry must contain `host` and `port`. Hosts may be specified using an IP address or hostname.
+Determines whether the database portion of the URL should dictate the actual MongoDB database to be used. When enabled, the request `GET /1.0/mydatabase/mycollection` would look for documents in a database with the ID `mydatabase`. If disabled, the default database (i.e. containing the property `default: true` in the configuration file) will be used.
 
-```json
-"hosts": [
-  {
-    "host": "127.0.0.1",
-    "port": 27017
-  }
-]
-```
+##### `databases`
 
-> If only using a single MongoDB instance this array needs only one host.
+The list of MongoDB databases to be used, as an array. Each database must be defined as an object with the following properties:
 
-##### database `String`
+###### `authDatabase`
 
-The name of the database in which to store collection data.
+The database to authenticate against when supplying a username and password.
 
-##### username `String`
-The username used to connect to the specified database.
+- _Format_: String
+- _Default_: `''`
+- _Environment variable_: `DB_{database}_AUTH_SOURCE`
+- _Required_: No
 
-##### password `String`
-
-The password used to connect to the specified database.
-
-##### authMechanism `String`
+###### `authMechanism`
 
 If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.
 
-##### authDatabase `String`
+- _Format_: String
+- _Default_: `''`
+- _Environment variable_: `DB_{database}_AUTH_MECHANISM`
+- _Required_: No
 
-The database to authenticate against when supplying a username and password, defaults to "admin".
+###### `default`
 
-##### ssl `Boolean`
+Whether this database should be used as the default (main) database. When no database has the `default` flag, the first one in the array will be used as default.
 
- * Default: `false`
+- _Format_: Boolean
+- _Default_: `false`
+- _Environment variable_: `DB_{database}_DEFAULT`
+- _Required_: No
 
-##### replicaSet `Boolean`
+###### `hosts`
 
-If `false`, the API will not attempt to connect to a replica set. If a string value, the API will use this value in the connection string to connect to a replica set.
+Comma-separated string of MongoDB hosts, including port (e.g. localhost,localhost:27018,localhost:27019).
 
- * Default: `false`
- * Example: `"s0001"`
-
-##### enableCollectionDatabases `Boolean`
-
-The `enableCollectionDatabases` setting determines whether the API will store collection data in separate databases as defined by the collection URLs.
-
-The collection URL format contains three segments:
-
-```
-e.g. http://api.somedomain.tech/1.0/library/books
-```
-
- * **API version**: `"1.0"`
- * **Database**: `"library"`
- * **Collection**: `"books"`
-
-If `"enableCollectionDatabases": true` the API will store the `books` data in the `library` database, regardless of the `database` setting in the configuration file.
-
-Otherwise, if `"enableCollectionDatabases": false` the API will store the `books` data (and all other collection data) in the database specified in the configuration file's `database` setting.
-
-#### Environment variables for database configuration properties
-
-Property | Environment variable | Description
-:--|:---|:--
-Database name | `DB_NAME` | The name of the database that holds general collection data
-Database username | `DB_USERNAME` | The username for connecting to the database that holds general collection data
-Database password | `DB_PASSWORD` | The password for connecting to the database that holds general collection data
-Authentication database name | `DB_AUTH_NAME` | The name of the database that holds authentication data, such as client account keys and access tokens
-Authentication database username | `DB_AUTH_USERNAME` | The username for connecting to the database that holds authentication data
-Authentication database password | `DB_AUTH_PASSWORD` | The password for connecting to the database that holds authentication data
-
-### Connecting to a replica set or sharded database
-
-Multiple `host` entries are required for a replica set or sharded setup and may look similar to the following example using [MongoLab](https://mongolab.com) databases:
+- _Format_: String
+- _Environment variable_: `DB_{database}_HOSTS`
+- _Required_: **Yes**
 
 
-```json
-{
-  "hosts": [
-      {
-        "host": "ds012345-z1.mongolab.com",
-        "port": 12345
-      },
-      {
-        "host": "ds012345-z2.mongolab.com",
-        "port": 12345
-      },
-      {
-        "host": "ds012345-z3.mongolab.com",
-        "port": 12345
-      }
-    ],
-  "database": "myApi",
-  "username": "apiUser",
-  "password": "apiPassword",
-  "ssl": false,
-  "replicaSet": "rs0001"
-}
-```
+###### `id`
 
-This configuration will produce the following MongoDB connection string:
+Database unique identifier.
 
-```
-mongodb://apiUser:apiPassword@ds012345-z1.mongolab.com:12345,ds012345-z2.mongolab.com:12345,ds012345-z3.mongolab.com:12345/myApi?replSet=rs0001
-```
+- _Format_: String
+- _Required_: **Yes**
 
-The Node.js MongoDB driver handles communication with the database servers to determine the primary instance.
+
+###### `maxPoolSize`
+
+The maximum number of connections in the connection pool.
+
+- _Format_: Number
+- _Default_: `0`
+- _Environment variable_: `DB_{database}_MAX_POOL`
+- _Required_: No
+
+
+###### `password`
+
+The access password, if one is needed.
+
+- _Format_: String
+- _Default_: `""`
+- _Environment variable_: `DB_{database}_PASSWORD`
+- _Required_: No
+
+
+###### `readPreference`
+
+How MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/.
+
+- _Format_: `"primary"`, `"primaryPreferred"`, `"secondary"`, `"secondaryPreferred"` or `"nearest"`
+- _Default_: `"secondaryPreferred"`
+- _Required_: No
+
+
+###### `replicaSet`
+
+The name of the replica set to identify the hosts.
+
+- _Format_: String
+- _Required_: No
+
+
+###### `ssl`
+
+Whether to initiate the connection with TLS/SSL.
+
+- _Format_: Boolean
+- _Default_: `false`
+- _Required_: No
+
+
+###### `username`
+
+The access username, if one is needed.
+
+- _Format_: String
+- _Default_: `""`
+- _Environment variable_: `DB_{database}_USERNAME`
+- _Required_: No
+
+## Licence
+
+DADI is a data centric development and delivery stack, built specifically in support of the principles of API first and COPE.
+
+Copyright notice<br />
+(C) 2019 DADI+ Limited <support@dadi.cloud><br />
+All rights reserved
+
+This product is part of DADI.<br />
+DADI is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version ("the GPL").
+
+**If you wish to use DADI outside the scope of the GPL, please
+contact us at info@dadi.co for details of alternative licence
+arrangements.**
+
+**This product may be distributed alongside other components
+available under different licences (which may not be GPL). See
+those components themselves, or the documentation accompanying
+them, to determine what licences are applicable.**
+
+DADI is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+The GNU General Public License (GPL) is available at
+http://www.gnu.org/licenses/gpl-3.0.en.html.<br />
+A copy can be found in the file GPL.md distributed with
+these files.
+
+This copyright notice MUST APPEAR in all copies of the product!
