@@ -1,79 +1,232 @@
-var convict = require('convict')
-var fs = require('fs')
+const convict = require('convict')
+const fs = require('fs')
 
-// Define a schema
-var conf = convict({
-  env: {
-    doc: "The applicaton environment.",
-    format: ["production", "development", "test", "qa"],
-    default: "development",
-    env: "NODE_ENV",
-    arg: "node_env"
-  },
-  hosts: {
-    doc: "",
-    format: Array,
-    default: [
-      {
-        host: "127.0.0.1",
-        port: 27017
-      }
-    ]
-  },
-  username: {
-    doc: "",
-    format: String,
-    default: "",
-    env: "DB_USERNAME"
-  },
-  password: {
-    doc: "",
-    format: String,
-    default: "",
-    env: "DB_PASSWORD"
+const DATABASE_SCHEMA = {
+  authDatabase: {
+    default: '',
+    doc: 'The database to authenticate against when supplying a username and password',
+    envTemplate: 'DB_{database}_AUTH_SOURCE',
+    format: String
   },
   authMechanism: {
-    doc: "If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.",
-    format: String,
-    default: "DEFAULT",
-    env: "DB_AUTH_MECHANISM"
+    default: '',
+    doc: 'If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.',
+    envTemplate: 'DB_{database}_AUTH_MECHANISM',
+    format: String
   },
-  authDatabase: {
-    doc: "The database to authenticate against when supplying a username and password",
-    format: String,
-    default: "admin",
-    env: "DB_AUTH_SOURCE"
+  default: {
+    default: false,
+    doc: '',
+    envTemplate: 'DB_{database}_DEFAULT',
+    format: Boolean
   },
-  database: {
-    doc: "",
+  hosts: {
+    default: '',
+    doc: 'Database hosts',
     format: String,
-    default: "test",
-    env: "DB_NAME"
+    envTemplate: 'DB_{database}_HOSTS'
   },
-  ssl: {
-    doc: "",
-    format: Boolean,
-    default: false
+  id: {
+    default: '',
+    doc: 'Database unique identifier',
+    format: String
   },
-  replicaSet: {
-    doc: "",
+  maxPoolSize: {
+    doc: 'The maximum number of connections in the connection pool',
+    format: Number,
+    default: 0,
+    envTemplate: 'DB_{database}_MAX_POOL'
+  },
+  password: {
+    doc: '',
     format: String,
-    default: ""
+    default: '',
+    envTemplate: 'DB_{database}_PASSWORD'
   },
   readPreference: {
-    doc: "Choose how MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/",
+    doc: 'Choose how MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/',
     format: ['primary', 'primaryPreferred', 'secondary', 'secondaryPreferred', 'nearest'],
     default: 'secondaryPreferred'
   },
-  enableCollectionDatabases: {
-    doc: "",
+  replicaSet: {
+    doc: '',
+    format: String,
+    default: ''
+  },
+  ssl: {
+    doc: '',
     format: Boolean,
     default: false
+  },
+  username: {
+    doc: '',
+    format: String,
+    default: '',
+    envTemplate: 'DB_{database}_USERNAME'
   }
-})
+}
 
-// Load environment dependent configuration
-var env = conf.get('env')
-conf.loadFile('./config/mongodb.' + env + '.json')
+const MAIN_SCHEMA = {
+  databases: {
+    default: [],
+    doc: 'Configuration block for each of the databases used throughout the application',
+    format: Array
+  },
+  enableCollectionDatabases: {
+    default: false,
+    doc: 'Whether to use a database specified in the collection endpoint',
+    format: Boolean
+  },
+  env: {
+    arg: 'node_env',
+    default: 'development',
+    doc: 'The applicaton environment.',
+    env: 'NODE_ENV',
+    format: ['production', 'development', 'test', 'qa']
+  }
+}
 
-module.exports = conf
+function transformLegacyDatabaseBlock (name, block) {
+  const hosts = block.hosts.map(({host, port}) => {
+    return `${host}:${port || 27017}`
+  }).join(',')
+
+  let newBlock = {
+    id: name
+  }
+
+  Object.keys(block).forEach(key => {
+    if (block[key] !== undefined && block[key] !== '') {
+      newBlock[key] = block[key]
+    }
+  })
+
+  newBlock.hosts = hosts
+
+  return newBlock
+}
+
+let mainConfig = convict(MAIN_SCHEMA)
+
+const loadConfig = () => {
+  // Load environment dependent configuration.
+  const environment = mainConfig.get('env')
+  const filePath = `./config/mongodb.${environment}.json`
+
+  try {
+    const configFile = fs.readFileSync(filePath, 'utf8')
+    const data = JSON.parse(configFile)
+
+    // Checking for legacy database blocks, which consist of objects
+    // where keys are database names.
+    if (data.databases && !Array.isArray(data.databases)) {
+      data.databases = Object.keys(data.databases).map(name => {
+        return transformLegacyDatabaseBlock(name, data.databases[name])
+      })
+
+      const exampleConfig = JSON.stringify({
+        databases: data.databases
+      }, null, 2)
+
+      console.warn(
+        `The current MongoDB configuration uses a \`databases\` object. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
+      )
+    }
+
+    data.databases = data.databases || []
+
+    let defaultDatabase = data.databases.find(database => {
+      return database.default === true
+    })
+
+    // Checking for the legacy `database` property, which indicates the
+    // default database.
+    if (defaultDatabase === undefined && data.database !== undefined) {
+      defaultDatabase = data.databases.find((database, index) => {
+        if (database.id === data.database) {
+          data.databases[index].default = true
+
+          const exampleConfig = JSON.stringify({
+            databases: data.databases
+          }, null, 2)
+    
+          console.warn(
+            `The current MongoDB configuration uses a \`database\` property to indicate the default database. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
+          )
+
+          return true
+        }
+      })
+    }
+
+    // Checking for legacy syntax, where database details for the default
+    // database are declared at the root level, instead of inside the
+    // `databases` property.
+    if (!defaultDatabase && Array.isArray(data.hosts)) {
+      const legacyBlock = {
+        authDatabase: data.authDatabase,
+        authMechanism: data.authMechanism,
+        hosts: data.hosts,
+        maxPoolSize: data.maxPoolSize,
+        password: data.password,
+        readPreference: data.readPreference,
+        replicaSet: data.replicaSet,
+        ssl: data.ssl,
+        username: data.username,
+      }
+      const newBlock = transformLegacyDatabaseBlock(data.database, legacyBlock)
+      
+      data.databases.push(newBlock)
+
+      const exampleConfig = JSON.stringify({
+        databases: [newBlock]
+      }, null, 2)
+
+      console.warn(
+        `The current MongoDB configuration uses a \`hosts\` array at the root level. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
+      )
+    }
+
+    mainConfig.load(data)
+    mainConfig.validate()
+
+    // Validating databases.
+    const databases = mainConfig.get('databases')
+    
+    databases.forEach((database, databaseIndex) => {
+      const databaseConfig = convict(DATABASE_SCHEMA)
+    
+      databaseConfig.load(database)
+      databaseConfig.validate()
+    
+      const schema = databaseConfig.getSchema().properties
+    
+      // Listening for database-specific environment variables.
+      // e.g. DB_testdb_USERNAME
+      Object.keys(schema).forEach(key => {
+        if (typeof schema[key].envTemplate === 'string') {
+          const envVar = schema[key].envTemplate.replace(
+            '{database}',
+            databaseIndex
+          )
+
+          if (process.env[envVar]) {
+            mainConfig.set(
+              `databases[${databaseIndex}].${key}`,
+              process.env[envVar]
+            )
+          }
+        }
+      })
+    })
+
+    return mainConfig
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+loadConfig()
+
+module.exports = mainConfig
+module.exports.loadConfig = loadConfig
