@@ -1,7 +1,7 @@
 var EventEmitter = require('events').EventEmitter
 var MongoDBAdapter = require('../../lib')
 var querystring = require('querystring')
-var packageManifest = require('../package.json')
+var packageManifest = require('../../package.json')
 var should = require('should')
 var url = require('url')
 
