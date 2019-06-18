@@ -1,6 +1,7 @@
 var EventEmitter = require('events').EventEmitter
 var MongoDBAdapter = require('../../lib')
 var querystring = require('querystring')
+var packageManifest = require('../../package.json')
 var should = require('should')
 var url = require('url')
 
@@ -28,6 +29,13 @@ describe('MongoDB', function () {
       mongodb.readyState.should.eql(0)
       done()
     })
+
+    it('should expose a handshake function', function (done) {
+      let mongodb = new MongoDBAdapter()
+
+      mongodb.handshake().version.should.eql(packageManifest.version)
+      done()
+    })    
   })
 
   describe('query utils', function () {
