@@ -16,12 +16,12 @@ const DATABASE_SCHEMA = {
   },
   default: {
     default: false,
-    doc: '',
+    doc: 'Whether this database should be used as the default (main) database',
     envTemplate: 'DB_{database}_DEFAULT',
     format: Boolean
   },
   hosts: {
-    default: '',
+    default: 'Comma-separated string of MongoDB hosts, including port (e.g. localhost,localhost:27018,localhost:27019)',
     doc: 'Database hosts',
     format: String,
     envTemplate: 'DB_{database}_HOSTS'
@@ -38,28 +38,28 @@ const DATABASE_SCHEMA = {
     envTemplate: 'DB_{database}_MAX_POOL'
   },
   password: {
-    doc: '',
+    doc: 'The access password, if one is needed',
     format: String,
     default: '',
     envTemplate: 'DB_{database}_PASSWORD'
   },
   readPreference: {
-    doc: 'Choose how MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/',
+    doc: 'How MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/',
     format: ['primary', 'primaryPreferred', 'secondary', 'secondaryPreferred', 'nearest'],
     default: 'secondaryPreferred'
   },
   replicaSet: {
-    doc: '',
+    doc: 'The name of the replica set to identify the hosts',
     format: String,
     default: ''
   },
   ssl: {
-    doc: '',
+    doc: 'Whether to initiate the connection with TLS/SSL',
     format: Boolean,
     default: false
   },
   username: {
-    doc: '',
+    doc: 'The access username, if one is needed',
     format: String,
     default: '',
     envTemplate: 'DB_{database}_USERNAME'
