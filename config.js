@@ -4,13 +4,15 @@ const fs = require('fs')
 const DATABASE_SCHEMA = {
   authDatabase: {
     default: '',
-    doc: 'The database to authenticate against when supplying a username and password',
+    doc:
+      'The database to authenticate against when supplying a username and password',
     envTemplate: 'DB_{database}_AUTH_SOURCE',
     format: String
   },
   authMechanism: {
     default: '',
-    doc: 'If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.',
+    doc:
+      'If no authentication mechanism is specified or the mechanism DEFAULT is specified, the driver will attempt to authenticate using the SCRAM-SHA-1 authentication method if it is available on the MongoDB server. If the server does not support SCRAM-SHA-1 the driver will authenticate using MONGODB-CR.',
     envTemplate: 'DB_{database}_AUTH_MECHANISM',
     format: String
   },
@@ -21,7 +23,8 @@ const DATABASE_SCHEMA = {
     format: Boolean
   },
   hosts: {
-    default: 'Comma-separated string of MongoDB hosts, including port (e.g. localhost,localhost:27018,localhost:27019)',
+    default:
+      'Comma-separated string of MongoDB hosts, including port (e.g. localhost,localhost:27018,localhost:27019)',
     doc: 'Database hosts',
     format: String,
     envTemplate: 'DB_{database}_HOSTS'
@@ -44,8 +47,15 @@ const DATABASE_SCHEMA = {
     envTemplate: 'DB_{database}_PASSWORD'
   },
   readPreference: {
-    doc: 'How MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/',
-    format: ['primary', 'primaryPreferred', 'secondary', 'secondaryPreferred', 'nearest'],
+    doc:
+      'How MongoDB routes read operations to the members of a replica set - see https://docs.mongodb.com/manual/reference/read-preference/',
+    format: [
+      'primary',
+      'primaryPreferred',
+      'secondary',
+      'secondaryPreferred',
+      'nearest'
+    ],
     default: 'secondaryPreferred'
   },
   replicaSet: {
@@ -69,7 +79,8 @@ const DATABASE_SCHEMA = {
 const MAIN_SCHEMA = {
   databases: {
     default: [],
-    doc: 'Configuration block for each of the databases used throughout the application',
+    doc:
+      'Configuration block for each of the databases used throughout the application',
     format: Array
   },
   enableCollectionDatabases: {
@@ -86,12 +97,14 @@ const MAIN_SCHEMA = {
   }
 }
 
-function transformLegacyDatabaseBlock (name, block) {
-  const hosts = block.hosts.map(({host, port}) => {
-    return `${host}:${port || 27017}`
-  }).join(',')
+function transformLegacyDatabaseBlock(name, block) {
+  const hosts = block.hosts
+    .map(({host, port}) => {
+      return `${host}:${port || 27017}`
+    })
+    .join(',')
 
-  let newBlock = {
+  const newBlock = {
     id: name
   }
 
@@ -106,7 +119,7 @@ function transformLegacyDatabaseBlock (name, block) {
   return newBlock
 }
 
-let mainConfig = convict(MAIN_SCHEMA)
+const mainConfig = convict(MAIN_SCHEMA)
 
 const loadConfig = () => {
   // Load environment dependent configuration.
@@ -124,9 +137,13 @@ const loadConfig = () => {
         return transformLegacyDatabaseBlock(name, data.databases[name])
       })
 
-      const exampleConfig = JSON.stringify({
-        databases: data.databases
-      }, null, 2)
+      const exampleConfig = JSON.stringify(
+        {
+          databases: data.databases
+        },
+        null,
+        2
+      )
 
       console.warn(
         `The current MongoDB configuration uses a \`databases\` object. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
@@ -146,16 +163,22 @@ const loadConfig = () => {
         if (database.id === data.database) {
           data.databases[index].default = true
 
-          const exampleConfig = JSON.stringify({
-            databases: data.databases
-          }, null, 2)
-    
+          const exampleConfig = JSON.stringify(
+            {
+              databases: data.databases
+            },
+            null,
+            2
+          )
+
           console.warn(
             `The current MongoDB configuration uses a \`database\` property to indicate the default database. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
           )
 
           return true
         }
+
+        return false
       })
     }
 
@@ -172,15 +195,19 @@ const loadConfig = () => {
         readPreference: data.readPreference,
         replicaSet: data.replicaSet,
         ssl: data.ssl,
-        username: data.username,
+        username: data.username
       }
       const newBlock = transformLegacyDatabaseBlock(data.database, legacyBlock)
-      
+
       data.databases.push(newBlock)
 
-      const exampleConfig = JSON.stringify({
-        databases: [newBlock]
-      }, null, 2)
+      const exampleConfig = JSON.stringify(
+        {
+          databases: [newBlock]
+        },
+        null,
+        2
+      )
 
       console.warn(
         `The current MongoDB configuration uses a \`hosts\` array at the root level. This syntax has been deprecated and will be removed in a future release. Please update your database configuration to:\n\n${exampleConfig}`
@@ -192,15 +219,15 @@ const loadConfig = () => {
 
     // Validating databases.
     const databases = mainConfig.get('databases')
-    
+
     databases.forEach((database, databaseIndex) => {
       const databaseConfig = convict(DATABASE_SCHEMA)
-    
+
       databaseConfig.load(database)
       databaseConfig.validate()
-    
+
       const schema = databaseConfig.getSchema().properties
-    
+
       // Listening for database-specific environment variables.
       // e.g. DB_testdb_USERNAME
       Object.keys(schema).forEach(key => {
