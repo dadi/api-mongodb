@@ -1,5 +1,4 @@
 {
-  "database": "testdb",
   "databases": [
     {
       "id": "authdb",
@@ -9,7 +8,8 @@
     },
     {
       "id": "defaultdb",
-      "hosts": "127.0.0.1:27017"
+      "hosts": "127.0.0.1:27017",
+      "default": true
     },
     {
       "id": "invaliddb",

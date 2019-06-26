@@ -14,8 +14,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test:prepare": "npm explore @dadi/test-tools -- npm run download-api-snapshot -- \"$PWD/test\"",
-    "test": "npm run test:prepare && rm -rf config/mongodb.test.json && eslint . && prettier --check **/*.js && env NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov ./node_modules/mocha/bin/_mocha test && ./node_modules/.bin/nyc report"
+    "test": "npm run test:fetch-data && npm run test:run",
+    "test:fetch-data": "npm explore @dadi/test-tools -- npm run download-api-snapshot -- \"$PWD/test\"",
+    "test:run": "rm -rf config/mongodb.test.json && eslint . && prettier --check **/*.js && env NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov ./node_modules/mocha/bin/_mocha test && ./node_modules/.bin/nyc report"
   },
   "author": "James Lambie <jameslambie@gmail.com>",
   "license": "ISC",
