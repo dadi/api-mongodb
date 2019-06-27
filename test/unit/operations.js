@@ -1,8 +1,6 @@
-const EventEmitter = require('events').EventEmitter
 const MongoDBAdapter = require('../../lib')
-const querystring = require('querystring')
+const sinon = require('sinon')
 const should = require('should')
-const url = require('url')
 
 const config = require(__dirname + '/../../config')
 const helper = require(__dirname + '/helper')
@@ -14,7 +12,7 @@ describe('MongoDB Operations', function() {
     const mongodb = new MongoDBAdapter()
 
     return mongodb.connect().then(() => {
-      return mongodb.dropDatabase('defaultdb')
+      return mongodb.dropDatabase()
     })
   })
 
@@ -26,7 +24,6 @@ describe('MongoDB Operations', function() {
     describe('create index', function() {
       it('should create an index on the specified collection', function(done) {
         const mongodb = new MongoDBAdapter()
-
         const indexes = [
           {
             keys: ['fieldName'],
@@ -35,13 +32,17 @@ describe('MongoDB Operations', function() {
         ]
 
         mongodb.connect().then(() => {
+          const spy = sinon.spy(mongodb.database, 'createIndex')
+
           mongodb
             .index('test', indexes)
             .then(result => {
-              result.should.be.Array
-              result.length.should.eql(1)
-              should.exist(result[0].index)
-              result[0].index.should.eql('fieldName_1')
+              spy.callCount.should.eql(1)
+              spy.getCall(0).args[0].should.eql('test')
+              spy.getCall(0).args[1].should.eql(indexes[0].keys)
+              spy.getCall(0).args[2].should.eql(indexes[0].options)
+
+              spy.restore()
 
               done()
             })
@@ -168,7 +169,6 @@ describe('MongoDB Operations', function() {
   describe('stats', function() {
     it('should return stats for the specified collection', function(done) {
       const mongodb = new MongoDBAdapter()
-
       const doc = {fieldName: 'foo'}
 
       mongodb.connect().then(() => {
@@ -179,7 +179,8 @@ describe('MongoDB Operations', function() {
             schema: helper.getModelSchema()
           })
           .then(result => {
-            mongodb.stats('test', {}).then(result => {
+            return mongodb.stats('test', {}).then(result => {
+              console.log(result)
               should.exist(result.count)
               result.count.should.eql(1)
               done()
