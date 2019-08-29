@@ -7,171 +7,181 @@ const config = require(__dirname + '/../../config')
 
 const DATABASES = [
   {
-    "id": "authdb",
-    "hosts": "127.0.0.1:27017",
-    "username": "johndoe",
-    "password": "topsecret"
+    id: 'authdb',
+    hosts: '127.0.0.1:27017',
+    username: 'johndoe',
+    password: 'topsecret'
   },
   {
-    "id": "defaultdb",
-    "hosts": "127.0.0.1:27017",
-    "default": true
+    id: 'defaultdb',
+    hosts: '127.0.0.1:27017',
+    default: true
   },
   {
-    "id": "invaliddb",
-    "hosts": "127.0.0.1:27019"
+    id: 'invaliddb',
+    hosts: '127.0.0.1:27019'
   },
   {
-    "id": "replicadb",
-    "hosts": "127.0.0.1:27017",
-    "replicaSet": "rs0"
+    id: 'replicadb',
+    hosts: '127.0.0.1:27017',
+    replicaSet: 'rs0'
   },
   {
-    "id": "somedb",
-    "hosts": "127.0.0.1:27017",
-    "username": "johndoe",
-    "password": "topsecret"
+    id: 'somedb',
+    hosts: '127.0.0.1:27017',
+    username: 'johndoe',
+    password: 'topsecret'
   },
   {
-    "id": "secondary",
-    "hosts": "127.0.0.1:27018"
+    id: 'secondary',
+    hosts: '127.0.0.1:27018'
   },
   {
-    "id": "testdb",
-    "hosts": "127.0.0.1:27017"
+    id: 'testdb',
+    hosts: '127.0.0.1:27017'
   }
 ]
 
 const DATABASES_NO_DEFAULT = [
   {
-    "id": "authdb",
-    "hosts": "127.0.0.1:27017",
-    "username": "johndoe",
-    "password": "topsecret"
+    id: 'authdb',
+    hosts: '127.0.0.1:27017',
+    username: 'johndoe',
+    password: 'topsecret'
   },
   {
-    "id": "defaultdb",
-    "hosts": "127.0.0.1:27017"
+    id: 'defaultdb',
+    hosts: '127.0.0.1:27017'
   },
   {
-    "id": "invaliddb",
-    "hosts": "127.0.0.1:27019"
+    id: 'invaliddb',
+    hosts: '127.0.0.1:27019'
   },
   {
-    "id": "replicadb",
-    "hosts": "127.0.0.1:27017",
-    "replicaSet": "rs0"
+    id: 'replicadb',
+    hosts: '127.0.0.1:27017',
+    replicaSet: 'rs0'
   },
   {
-    "id": "somedb",
-    "hosts": "127.0.0.1:27017",
-    "username": "johndoe",
-    "password": "topsecret"
+    id: 'somedb',
+    hosts: '127.0.0.1:27017',
+    username: 'johndoe',
+    password: 'topsecret'
   },
   {
-    "id": "secondary",
-    "hosts": "127.0.0.1:27018"
+    id: 'secondary',
+    hosts: '127.0.0.1:27018'
   },
   {
-    "id": "testdb",
-    "hosts": "127.0.0.1:27017"
+    id: 'testdb',
+    hosts: '127.0.0.1:27017'
   }
 ]
 
-describe('MongoDB connection', function () {
+describe('MongoDB connection', function() {
   this.timeout(2000)
 
-  describe('getDatabaseOptions', function () {
+  describe('getDatabaseOptions', function() {
     it('should use the legacy `database` property to determine the default database, if no `default` property is set', () => {
-      return help.setConfig({
-        database: 'defaultdb',
-        databases: DATABASES_NO_DEFAULT,
-        hosts: [{host: '127.0.0.1', port: 27017}]
-      }).then(restoreConfig => {
-        const mongoDb = new MongoDBAdapter()
-        const database = mongoDb.getDatabaseOptions({
-          database: 'somedb',
-          override: false
+      return help
+        .setConfig({
+          database: 'defaultdb',
+          databases: DATABASES_NO_DEFAULT,
+          hosts: [{host: '127.0.0.1', port: 27017}]
         })
+        .then(restoreConfig => {
+          const mongoDb = new MongoDBAdapter()
+          const database = mongoDb.getDatabaseOptions({
+            database: 'somedb',
+            override: false
+          })
 
-        database.id.should.eql(DATABASES[1].id)
-        database.hosts.should.eql(DATABASES[1].hosts)
+          database.id.should.eql(DATABASES[1].id)
+          database.hosts.should.eql(DATABASES[1].hosts)
 
-        return restoreConfig()
-      })
+          return restoreConfig()
+        })
     })
 
     it('should connect to the only database in `databases` even if it does not have a `default` property', () => {
-      return help.setConfig({
-        databases: [DATABASES_NO_DEFAULT[1]]
-      }).then(restoreConfig => {
-        const mongoDb = new MongoDBAdapter()
-        const database = mongoDb.getDatabaseOptions({
-          database: 'somedb',
-          override: false
+      return help
+        .setConfig({
+          databases: [DATABASES_NO_DEFAULT[1]]
         })
+        .then(restoreConfig => {
+          const mongoDb = new MongoDBAdapter()
+          const database = mongoDb.getDatabaseOptions({
+            database: 'somedb',
+            override: false
+          })
 
-        database.id.should.eql(DATABASES_NO_DEFAULT[1].id)
-        database.hosts.should.eql(DATABASES_NO_DEFAULT[1].hosts)
+          database.id.should.eql(DATABASES_NO_DEFAULT[1].id)
+          database.hosts.should.eql(DATABASES_NO_DEFAULT[1].hosts)
 
-        return restoreConfig()
-      })
+          return restoreConfig()
+        })
     })
 
     it('should use block of specified database if it exists and `override` is set to true', () => {
-      return help.setConfig({
-        databases: DATABASES
-      }).then(restoreConfig => {
-        const mongoDb = new MongoDBAdapter()
-        const database = mongoDb.getDatabaseOptions({
-          database: 'somedb',
-          override: true
+      return help
+        .setConfig({
+          databases: DATABASES
         })
+        .then(restoreConfig => {
+          const mongoDb = new MongoDBAdapter()
+          const database = mongoDb.getDatabaseOptions({
+            database: 'somedb',
+            override: true
+          })
 
-        database.should.eql(DATABASES[4])
+          database.should.eql(DATABASES[4])
 
-        return restoreConfig()
-      })
+          return restoreConfig()
+        })
     })
 
     it('should use block of default database if `override` is set to false', () => {
-      return help.setConfig({
-        databases: DATABASES
-      }).then(restoreConfig => {
-        const mongoDb = new MongoDBAdapter()
-        const database = mongoDb.getDatabaseOptions({
-          database: 'somedb',
-          override: false
+      return help
+        .setConfig({
+          databases: DATABASES
         })
-  
-        database.id.should.eql('defaultdb')
-        database.hosts.should.eql(DATABASES[1].hosts)
+        .then(restoreConfig => {
+          const mongoDb = new MongoDBAdapter()
+          const database = mongoDb.getDatabaseOptions({
+            database: 'somedb',
+            override: false
+          })
 
-        return restoreConfig()
-      })
+          database.id.should.eql('defaultdb')
+          database.hosts.should.eql(DATABASES[1].hosts)
+
+          return restoreConfig()
+        })
     })
 
     it('should use top-level database block if there is no entry in the `databases` block', () => {
-      return help.setConfig({
-        database: 'defaultdb',
-        databases: [],
-        hosts: [{host: '127.0.0.1', port: 27017}]
-      }).then(restoreConfig => {
-        const mongoDb = new MongoDBAdapter()
-        const database = mongoDb.getDatabaseOptions({
+      return help
+        .setConfig({
           database: 'defaultdb',
-          override: false
+          databases: [],
+          hosts: [{host: '127.0.0.1', port: 27017}]
         })
-  
-        database.id.should.eql('defaultdb')
-        database.hosts.should.eql(DATABASES[1].hosts)
+        .then(restoreConfig => {
+          const mongoDb = new MongoDBAdapter()
+          const database = mongoDb.getDatabaseOptions({
+            database: 'defaultdb',
+            override: false
+          })
 
-        return restoreConfig()
-      })
+          database.id.should.eql('defaultdb')
+          database.hosts.should.eql(DATABASES[1].hosts)
+
+          return restoreConfig()
+        })
     })
   })
 
-  describe('getConnectionString', function () {
+  describe('getConnectionString', function() {
     it('should construct a connection string with all hosts', () => {
       const mongoDb = new MongoDBAdapter()
       const connectionString1 = mongoDb.getConnectionString({
@@ -183,9 +193,7 @@ describe('MongoDB connection', function () {
         hosts: '123.456.78.9:1234,321.654.78.9:4321'
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
         'mongodb://123.456.78.9:1234,321.654.78.9:4321/somedb2'
       )
@@ -216,12 +224,8 @@ describe('MongoDB connection', function () {
         password: 'whoami'
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
-      connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
+      connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
         'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3'
       )
@@ -252,12 +256,8 @@ describe('MongoDB connection', function () {
         password: 'whoami'
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
-      connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
+      connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
         'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authMechanism=MONGODB-X509'
       )
@@ -285,12 +285,8 @@ describe('MongoDB connection', function () {
         password: 'whoami'
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
-      connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
+      connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
         'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authDatabase=myauth'
       )
@@ -308,9 +304,7 @@ describe('MongoDB connection', function () {
         ssl: true
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
         'mongodb://123.456.78.9:1234/somedb2?ssl=true'
       )
@@ -328,9 +322,7 @@ describe('MongoDB connection', function () {
         maxPoolSize: 50
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
         'mongodb://123.456.78.9:1234/somedb2?maxPoolSize=50'
       )
@@ -348,9 +340,7 @@ describe('MongoDB connection', function () {
         replicaSet: 'rs0'
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
         'mongodb://123.456.78.9:1234/somedb2?replicaSet=rs0'
       )
@@ -368,57 +358,65 @@ describe('MongoDB connection', function () {
         readPreference: 'nearest'
       })
 
-      connectionString1.should.eql(
-        'mongodb://123.456.78.9:1234/somedb1'
-      )
+      connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
         'mongodb://123.456.78.9:1234/somedb2?readPreference=nearest'
       )
     })
   })
 
-  describe('connect', function () {
-    it('should set readyState to 1 when connected', function (done) {
-      var mongodb = new MongoDBAdapter()
-      mongodb.connect().then(() => {
-        mongodb.database.should.be.an.instanceOf(EventEmitter)
-        done()
-      }).catch((err) => {
-        console.log(err)
-      })
+  describe('connect', function() {
+    it('should set readyState to 1 when connected', function(done) {
+      const mongodb = new MongoDBAdapter()
+
+      mongodb
+        .connect()
+        .then(() => {
+          mongodb.database.should.be.an.instanceOf(EventEmitter)
+          done()
+        })
+        .catch(err => {
+          console.log(err)
+        })
     })
 
-    it('should assign Db to the database property', function (done) {
-      var mongodb = new MongoDBAdapter()
-      mongodb.connect().then(() => {
-        mongodb.database.should.be.an.instanceOf(EventEmitter)
-        done()
-      }).catch((err) => {
-        console.log(err)
-      })
+    it('should assign Db to the database property', function(done) {
+      const mongodb = new MongoDBAdapter()
+
+      mongodb
+        .connect()
+        .then(() => {
+          mongodb.database.should.be.an.instanceOf(EventEmitter)
+          done()
+        })
+        .catch(err => {
+          console.log(err)
+        })
     })
 
-    it('should reject when connecting with invalid credentials', function (done) {
+    it('should reject when connecting with invalid credentials', function(done) {
       const newDatabases = JSON.parse(JSON.stringify(DATABASES_NO_DEFAULT))
 
       newDatabases[0].default = true
 
-      help.setConfig({
-        databases: newDatabases,
-        hosts: [{host: '127.0.0.1', port: 27017}]
-      }).then(restoreConfig => {
-        const mongodb = new MongoDBAdapter()
-
-        mongodb.connect().catch((err) => {
-          should.exist(err)
-          err.message.should.eql('Authentication failed.')
-
-          restoreConfig().then(() => done())
+      help
+        .setConfig({
+          databases: newDatabases,
+          hosts: [{host: '127.0.0.1', port: 27017}]
         })
-      })
+        .then(restoreConfig => {
+          const mongodb = new MongoDBAdapter()
+
+          mongodb.connect().catch(err => {
+            should.exist(err)
+            err.message.should.eql('Authentication failed.')
+
+            restoreConfig().then(() => done())
+          })
+        })
     })
 
-    it('should listen to database-specific environment variables', function (done) {
+    it('should listen to database-specific environment variables', function(done) {
       process.env.DB_1_HOST = '127.0.0.1:27017'
 
       config.loadConfig()
@@ -432,112 +430,128 @@ describe('MongoDB connection', function () {
       })
     })
 
-    it('should reject when connection can\'t be established', function (done) {
+    it("should reject when connection can't be established", function(done) {
       const newDatabases = JSON.parse(JSON.stringify(DATABASES_NO_DEFAULT))
 
       newDatabases[2].default = true
 
-      help.setConfig({
-        databases: newDatabases
-      }).then(restoreConfig => {      
-        const mongodb = new MongoDBAdapter()
-
-        mongodb.connect().catch((err) => {
-          should.exist(err)
-
-          restoreConfig().then(() => done())
+      help
+        .setConfig({
+          databases: newDatabases
         })
-      })
+        .then(restoreConfig => {
+          const mongodb = new MongoDBAdapter()
+
+          mongodb.connect().catch(err => {
+            should.exist(err)
+
+            restoreConfig().then(() => done())
+          })
+        })
     })
 
-    it('should reject when replicaSet servers can\'t be found', function (done) {
+    it("should reject when replicaSet servers can't be found", function(done) {
       const newDatabases = JSON.parse(JSON.stringify(DATABASES_NO_DEFAULT))
 
       newDatabases[3].default = true
 
-      help.setConfig({
-        databases: newDatabases,
-        hosts: [{host: '127.0.0.1', port: 27017}]
-      }).then(restoreConfig => {
-        const mongodb = new MongoDBAdapter()
-        const spy = sinon.spy(mongodb._mongoClient, 'connect')
-  
-        mongodb.connect().catch((err) => {
-          should.exist(err)
-          err.should.be.Error
-  
-          spy.getCall(0).args[0].should.eql('mongodb://127.0.0.1:27017/replicadb?replicaSet=rs0')
-          spy.restore()
-
-          restoreConfig().then(() => done())
+      help
+        .setConfig({
+          databases: newDatabases,
+          hosts: [{host: '127.0.0.1', port: 27017}]
         })
-      })
+        .then(restoreConfig => {
+          const mongodb = new MongoDBAdapter()
+          const spy = sinon.spy(mongodb._mongoClient, 'connect')
+
+          mongodb.connect().catch(err => {
+            should.exist(err)
+            err.should.be.Error
+
+            spy
+              .getCall(0)
+              .args[0].should.eql(
+                'mongodb://127.0.0.1:27017/replicadb?replicaSet=rs0'
+              )
+            spy.restore()
+
+            restoreConfig().then(() => done())
+          })
+        })
     })
   })
 
-  describe('error states', function () {
-    it('`insert` should reject when not connected', function (done) {
+  describe('error states', function() {
+    it('`insert` should reject when not connected', function(done) {
       const mongodb = new MongoDBAdapter()
 
       mongodb.connect({hi: 'there'}).then(() => {
         mongodb.readyState = 0
 
-        mongodb.insert({query: {}, collection: 'testdb', schema: {}}).catch(err => {
-          should.exist(err)
-          err.should.be.Error
-          err.message.should.eql('DB_DISCONNECTED')
+        mongodb
+          .insert({query: {}, collection: 'testdb', schema: {}})
+          .catch(err => {
+            should.exist(err)
+            err.should.be.Error
+            err.message.should.eql('DB_DISCONNECTED')
 
-          done()
-        })
+            done()
+          })
       })
     })
 
-    it('`update` should reject when not connected', function (done) {
+    it('`update` should reject when not connected', function(done) {
       const mongodb = new MongoDBAdapter()
 
       mongodb.connect().then(() => {
         mongodb.readyState = 0
 
-        mongodb.update({query: {}, collection: 'testdb', schema: {}}).catch(err => {
-          should.exist(err)
-          err.should.be.Error
-          err.message.should.eql('DB_DISCONNECTED')
-        })
+        mongodb
+          .update({query: {}, collection: 'testdb', schema: {}})
+          .catch(err => {
+            should.exist(err)
+            err.should.be.Error
+            err.message.should.eql('DB_DISCONNECTED')
+          })
         done()
       })
     })
 
-    it('`find` should reject when not connected', function (done) {
+    it('`find` should reject when not connected', function(done) {
       const mongodb = new MongoDBAdapter()
 
       mongodb.connect().then(() => {
         mongodb.readyState = 0
 
-        mongodb.find({query: {}, collection: 'testdb', schema: {}}).catch(err => {
-          should.exist(err)
-          err.should.be.Error
-          err.message.should.eql('DB_DISCONNECTED')
-        })
+        mongodb
+          .find({query: {}, collection: 'testdb', schema: {}})
+          .catch(err => {
+            should.exist(err)
+            err.should.be.Error
+            err.message.should.eql('DB_DISCONNECTED')
+          })
         done()
       })
     })
 
-    it('`delete` should reject when not connected', function (done) {
+    it('`delete` should reject when not connected', function(done) {
       const mongodb = new MongoDBAdapter()
 
       mongodb.connect().then(() => {
         mongodb.readyState = 0
 
-        mongodb.delete({query: {}, collection: 'testdb', schema: {}}).catch(err => {
-          should.exist(err)
-          err.should.be.Error
-          err.message.should.eql('DB_DISCONNECTED')
-        })
+        mongodb
+          .delete({query: {}, collection: 'testdb', schema: {}})
+          .catch(err => {
+            should.exist(err)
+            err.should.be.Error
+            err.message.should.eql('DB_DISCONNECTED')
+          })
         done()
       })
     })
 
-    it('`stats` should reject when not connected', function (done) {
+    it('`stats` should reject when not connected', function(done) {
       const mongodb = new MongoDBAdapter()
 
       mongodb.connect().then(() => {

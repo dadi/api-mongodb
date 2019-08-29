@@ -1,6 +1,6 @@
 {
   "name": "@dadi/api-mongodb",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "A MongoDB adapter for DADI API",
   "keywords": [
     "dadi",
@@ -14,7 +14,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "rm -rf config/mongodb.test.json && standard 'lib/**/*.js' | snazzy 'lib/**/*.js' && env NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov ./node_modules/mocha/bin/_mocha test && ./node_modules/.bin/nyc report"
+    "test": "npm run test:fetch-data && npm run test:run",
+    "test:fetch-data": "npm explore @dadi/test-tools -- npm run download-api-snapshot -- \"$PWD/test\"",
+    "test:run": "rm -rf config/mongodb.test.json && eslint . && prettier --check **/*.js && env NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov ./node_modules/mocha/bin/_mocha test && ./node_modules/.bin/nyc report"
   },
   "author": "James Lambie <jameslambie@gmail.com>",
   "license": "ISC",
@@ -29,14 +31,30 @@
     "url": "https://github.com/dadi/api-mongodb.git"
   },
   "devDependencies": {
+    "@dadi/eslint-config": "latest",
+    "@dadi/prettier-config": "latest",
+    "@dadi/test-tools": "latest",
     "colors": "^1.2.1",
     "coveralls": "^3.0.1",
     "env-test": "1.0.0",
+    "eslint": "^5.16.0",
+    "husky": "^2.4.1",
+    "lint-staged": "^8.2.1",
     "mocha": "5.2.0",
     "nyc": "^14.0.0",
+    "prettier": "^1.18.2",
     "should": "11.2.1",
-    "sinon": "4.4.3",
-    "snazzy": "7.0.0",
-    "standard": "8.x.x"
+    "sinon": "4.4.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,md,html}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
