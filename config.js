@@ -93,7 +93,7 @@ const MAIN_SCHEMA = {
     default: 'development',
     doc: 'The applicaton environment.',
     env: 'NODE_ENV',
-    format: ['production', 'development', 'test', 'qa']
+    format: String
   }
 }
 
