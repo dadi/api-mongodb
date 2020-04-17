@@ -2,8 +2,8 @@ const EventEmitter = require('events').EventEmitter
 const help = require('./helper')
 const MongoDBAdapter = require('../../lib')
 const should = require('should')
-const sinon = require('sinon')
-const config = require(__dirname + '/../../config')
+const path = require('path')
+const config = require(path.join(__dirname, '/../../config'))
 
 const DATABASES = [
   {
@@ -462,18 +462,14 @@ describe('MongoDB connection', function() {
         })
         .then(restoreConfig => {
           const mongodb = new MongoDBAdapter()
-          const spy = sinon.spy(mongodb._mongoClient, 'connect')
 
           mongodb.connect().catch(err => {
             should.exist(err)
             err.should.be.Error
 
-            spy
-              .getCall(0)
-              .args[0].should.eql(
-                'mongodb://127.0.0.1:27017/replicadb?replicaSet=rs0'
-              )
-            spy.restore()
+            mongodb._mongoClient.s.url.should.eql(
+              'mongodb://127.0.0.1:27017/replicadb?replicaSet=rs0'
+            )
 
             restoreConfig().then(() => done())
           })

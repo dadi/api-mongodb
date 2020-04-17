@@ -1,9 +1,8 @@
 const MongoDBAdapter = require('../../lib')
 const sinon = require('sinon')
 const should = require('should')
-
-const config = require(__dirname + '/../../config')
-const helper = require(__dirname + '/helper')
+const path = require('path')
+const helper = require(path.join(__dirname, '/helper'))
 
 describe('MongoDB Operations', function() {
   this.timeout(2000)
