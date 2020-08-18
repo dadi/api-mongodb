@@ -288,7 +288,7 @@ describe('MongoDB connection', function() {
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
-        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authDatabase=myauth'
+        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authSource=myauth'
       )
     })
 
