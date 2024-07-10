@@ -1,5 +1,7 @@
-node_modules
 .DS_Store
-coverage/*
-config/mongodb.test.json
 .nyc_output/
+config/mongodb.test.json
+coverage/*
+data.apisnapshot
+node_modules
+package-lock.json

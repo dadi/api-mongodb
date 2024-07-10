@@ -1,8 +1,10 @@
-const path = require('path')
+import lib from './lib'
 
-module.exports = require(path.join(__dirname, 'lib'))
+export * from './lib'
 
-module.exports.settings = {
+export const settings = {
   connectWithCollection: true,
-  internalProperties: ['_id']
+  internalProperties: ['_id'],
 }
+
+export default lib
