@@ -41,7 +41,7 @@
     "colors": "^1.2.1",
     "coveralls": "^3.1.1",
     "env-test": "1.0.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.7.0",
     "husky": "^2.4.1",
     "lint-staged": "^15.2.7",
     "mocha": "^10.6.0",
