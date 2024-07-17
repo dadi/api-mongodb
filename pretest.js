@@ -1,10 +1,12 @@
-const fs = require('fs')
+import console from 'console'
+import fs from 'fs'
+import process from 'process'
 
 const testConfigPath = './config/mongodb.test.json'
 const testConfigSamplePath = './config/mongodb.test.json.sample'
 
 const testConfigSample = fs.readFileSync(testConfigSamplePath, {
-  encoding: 'utf-8'
+  encoding: 'utf-8',
 })
 
 function loadConfig(done) {
@@ -17,7 +19,7 @@ function loadConfig(done) {
       fs.writeFileSync(testConfigPath, testConfigSample)
       console.log()
       console.log("Created file at '" + testConfigPath + "'")
-      loadConfig(function(config) {
+      loadConfig(function (config) {
         testDatabaseSetting(config)
       })
     }
@@ -41,12 +43,12 @@ function testDatabaseSetting(config) {
     console.log(message.bold.red)
     console.log('')
     console.log(
-      'Tests will not be run with the current configuration.\n'.bold.red
+      'Tests will not be run with the current configuration.\n'.bold.red,
     )
     stop()
   }
 }
 
-loadConfig(function(config) {
+loadConfig(function (config) {
   testDatabaseSetting(config)
 })

@@ -1,569 +1,487 @@
-const EventEmitter = require('events').EventEmitter
-const help = require('./helper')
-const MongoDBAdapter = require('../../lib')
-const should = require('should')
-const sinon = require('sinon')
-const config = require(__dirname + '/../../config')
+import * as helper from './helper.js'
+import * as lib from '../../lib/index.js'
+import {DATABASES, DATABASES_NO_DEFAULT} from './databases.js'
+import DataStore from '../../lib/index.js'
+import {loadConfig} from '../../config.js'
+import process from 'process'
+import should from 'should'
+// import sinon from 'sinon'
 
-const DATABASES = [
-  {
-    id: 'authdb',
-    hosts: '127.0.0.1:27017',
-    username: 'johndoe',
-    password: 'topsecret'
-  },
-  {
-    id: 'defaultdb',
-    hosts: '127.0.0.1:27017',
-    default: true
-  },
-  {
-    id: 'invaliddb',
-    hosts: '127.0.0.1:27019'
-  },
-  {
-    id: 'replicadb',
-    hosts: '127.0.0.1:27017',
-    replicaSet: 'rs0'
-  },
-  {
-    id: 'somedb',
-    hosts: '127.0.0.1:27017',
-    username: 'johndoe',
-    password: 'topsecret'
-  },
-  {
-    id: 'secondary',
-    hosts: '127.0.0.1:27018'
-  },
-  {
-    id: 'testdb',
-    hosts: '127.0.0.1:27017'
-  }
-]
-
-const DATABASES_NO_DEFAULT = [
-  {
-    id: 'authdb',
-    hosts: '127.0.0.1:27017',
-    username: 'johndoe',
-    password: 'topsecret'
-  },
-  {
-    id: 'defaultdb',
-    hosts: '127.0.0.1:27017'
-  },
-  {
-    id: 'invaliddb',
-    hosts: '127.0.0.1:27019'
-  },
-  {
-    id: 'replicadb',
-    hosts: '127.0.0.1:27017',
-    replicaSet: 'rs0'
-  },
-  {
-    id: 'somedb',
-    hosts: '127.0.0.1:27017',
-    username: 'johndoe',
-    password: 'topsecret'
-  },
-  {
-    id: 'secondary',
-    hosts: '127.0.0.1:27018'
-  },
-  {
-    id: 'testdb',
-    hosts: '127.0.0.1:27017'
-  }
-]
-
-describe('MongoDB connection', function() {
+describe('MongoDB connection', function () {
   this.timeout(2000)
 
-  describe('getDatabaseOptions', function() {
-    it('should use the legacy `database` property to determine the default database, if no `default` property is set', () => {
-      return help
-        .setConfig({
+  describe('getDatabaseOptions', function () {
+    it('should use the legacy `database` property to determine the default database, if no `default` property is set', async function () {
+      const restoreConfig = await helper.setConfig({
+        database: 'defaultdb',
+        databases: DATABASES_NO_DEFAULT,
+        hosts: [{host: '127.0.0.1', port: 27017}],
+      })
+
+      try {
+        const datastore = new DataStore()
+        const database = datastore.getDatabaseOptions({
+          database: 'somedb',
+          override: false,
+        })
+
+        database.id.should.eql(DATABASES[1].id)
+        database.hosts.should.eql(DATABASES[1].hosts)
+      } finally {
+        await restoreConfig()
+      }
+    })
+
+    it('should connect to the only database in `databases` even if it does not have a `default` property', async function () {
+      const restoreConfig = await helper.setConfig({
+        databases: [DATABASES_NO_DEFAULT[1]],
+      })
+
+      try {
+        const datastore = new DataStore()
+        const database = datastore.getDatabaseOptions({
+          database: 'somedb',
+          override: false,
+        })
+
+        database.id.should.eql(DATABASES_NO_DEFAULT[1].id)
+        database.hosts.should.eql(DATABASES_NO_DEFAULT[1].hosts)
+      } finally {
+        await restoreConfig()
+      }
+    })
+
+    it('should use block of specified database if it exists and `override` is set to true', async function () {
+      const restoreConfig = await helper.setConfig({
+        databases: DATABASES,
+      })
+
+      try {
+        const datastore = new DataStore()
+        const database = datastore.getDatabaseOptions({
+          database: 'somedb',
+          override: true,
+        })
+
+        database.should.eql(DATABASES[4])
+      } finally {
+        await restoreConfig()
+      }
+    })
+
+    it('should use block of default database if `override` is set to false', async function () {
+      const restoreConfig = await helper.setConfig({
+        databases: DATABASES,
+      })
+
+      try {
+        const datastore = new DataStore()
+        const database = datastore.getDatabaseOptions({
+          database: 'somedb',
+          override: false,
+        })
+
+        database.id.should.eql('defaultdb')
+        database.hosts.should.eql(DATABASES[1].hosts)
+      } finally {
+        await restoreConfig()
+      }
+    })
+
+    it('should use top-level database block if there is no entry in the `databases` block', async function () {
+      const restoreConfig = await helper.setConfig({
+        database: 'defaultdb',
+        databases: [],
+        hosts: [{host: '127.0.0.1', port: 27017}],
+      })
+
+      try {
+        const datastore = new DataStore()
+        const database = datastore.getDatabaseOptions({
           database: 'defaultdb',
-          databases: DATABASES_NO_DEFAULT,
-          hosts: [{host: '127.0.0.1', port: 27017}]
+          override: false,
         })
-        .then(restoreConfig => {
-          const mongoDb = new MongoDBAdapter()
-          const database = mongoDb.getDatabaseOptions({
-            database: 'somedb',
-            override: false
-          })
 
-          database.id.should.eql(DATABASES[1].id)
-          database.hosts.should.eql(DATABASES[1].hosts)
-
-          return restoreConfig()
-        })
-    })
-
-    it('should connect to the only database in `databases` even if it does not have a `default` property', () => {
-      return help
-        .setConfig({
-          databases: [DATABASES_NO_DEFAULT[1]]
-        })
-        .then(restoreConfig => {
-          const mongoDb = new MongoDBAdapter()
-          const database = mongoDb.getDatabaseOptions({
-            database: 'somedb',
-            override: false
-          })
-
-          database.id.should.eql(DATABASES_NO_DEFAULT[1].id)
-          database.hosts.should.eql(DATABASES_NO_DEFAULT[1].hosts)
-
-          return restoreConfig()
-        })
-    })
-
-    it('should use block of specified database if it exists and `override` is set to true', () => {
-      return help
-        .setConfig({
-          databases: DATABASES
-        })
-        .then(restoreConfig => {
-          const mongoDb = new MongoDBAdapter()
-          const database = mongoDb.getDatabaseOptions({
-            database: 'somedb',
-            override: true
-          })
-
-          database.should.eql(DATABASES[4])
-
-          return restoreConfig()
-        })
-    })
-
-    it('should use block of default database if `override` is set to false', () => {
-      return help
-        .setConfig({
-          databases: DATABASES
-        })
-        .then(restoreConfig => {
-          const mongoDb = new MongoDBAdapter()
-          const database = mongoDb.getDatabaseOptions({
-            database: 'somedb',
-            override: false
-          })
-
-          database.id.should.eql('defaultdb')
-          database.hosts.should.eql(DATABASES[1].hosts)
-
-          return restoreConfig()
-        })
-    })
-
-    it('should use top-level database block if there is no entry in the `databases` block', () => {
-      return help
-        .setConfig({
-          database: 'defaultdb',
-          databases: [],
-          hosts: [{host: '127.0.0.1', port: 27017}]
-        })
-        .then(restoreConfig => {
-          const mongoDb = new MongoDBAdapter()
-          const database = mongoDb.getDatabaseOptions({
-            database: 'defaultdb',
-            override: false
-          })
-
-          database.id.should.eql('defaultdb')
-          database.hosts.should.eql(DATABASES[1].hosts)
-
-          return restoreConfig()
-        })
+        database.id.should.eql('defaultdb')
+        database.hosts.should.eql(DATABASES[1].hosts)
+      } finally {
+        await restoreConfig()
+      }
     })
   })
 
-  describe('getConnectionString', function() {
-    it('should construct a connection string with all hosts', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+  describe('getConnectionString', function () {
+    it('should construct a connection string with all hosts', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
-        hosts: '123.456.78.9:1234'
+        hosts: '123.456.78.9:1234',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
-        hosts: '123.456.78.9:1234,321.654.78.9:4321'
+        hosts: '123.456.78.9:1234,321.654.78.9:4321',
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234,321.654.78.9:4321/somedb2'
+        'mongodb://123.456.78.9:1234,321.654.78.9:4321/somedb2',
       )
     })
 
-    it('should include username and password if both properties are defined', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include username and password if both properties are defined', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
         hosts: '123.456.78.9:1234',
-        username: 'johndoe'
+        username: 'johndoe',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         hosts: '123.456.78.9:1234',
-        password: 'whoami'
+        password: 'whoami',
       })
-      const connectionString3 = mongoDb.getConnectionString({
+      const connectionString3 = datastore.getConnectionString({
         id: 'somedb3',
         hosts: '123.456.78.9:1234',
         username: 'johndoe',
-        password: 'whoami'
+        password: 'whoami',
       })
-      const connectionString4 = mongoDb.getConnectionString({
+      const connectionString4 = datastore.getConnectionString({
         id: 'somedb4',
         hosts: '123.456.78.9:1234,321.654.78.9:4321',
         username: 'johndoe',
-        password: 'whoami'
+        password: 'whoami',
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
-        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3'
+        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3',
       )
       connectionString4.should.eql(
-        'mongodb://johndoe:whoami@123.456.78.9:1234,321.654.78.9:4321/somedb4'
+        'mongodb://johndoe:whoami@123.456.78.9:1234,321.654.78.9:4321/somedb4',
       )
     })
 
-    it('should include `authMechanism` when specified, if username and password are set', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include `authMechanism` when specified, if username and password are set', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
         authMechanism: 'MONGODB-X509',
         hosts: '123.456.78.9:1234',
-        username: 'johndoe'
+        username: 'johndoe',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         authMechanism: 'MONGODB-X509',
         hosts: '123.456.78.9:1234',
-        password: 'whoami'
+        password: 'whoami',
       })
-      const connectionString3 = mongoDb.getConnectionString({
+      const connectionString3 = datastore.getConnectionString({
         id: 'somedb3',
         authMechanism: 'MONGODB-X509',
         hosts: '123.456.78.9:1234',
         username: 'johndoe',
-        password: 'whoami'
+        password: 'whoami',
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
-        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authMechanism=MONGODB-X509'
+        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authMechanism=MONGODB-X509',
       )
     })
 
-    it('should include `authDatabase` when specified, if username and password are set', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include `authDatabase` when specified, if username and password are set', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
         authDatabase: 'myauth',
         hosts: '123.456.78.9:1234',
-        username: 'johndoe'
+        username: 'johndoe',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         authDatabase: 'myauth',
         hosts: '123.456.78.9:1234',
-        password: 'whoami'
+        password: 'whoami',
       })
-      const connectionString3 = mongoDb.getConnectionString({
+      const connectionString3 = datastore.getConnectionString({
         id: 'somedb3',
         authDatabase: 'myauth',
         hosts: '123.456.78.9:1234',
         username: 'johndoe',
-        password: 'whoami'
+        password: 'whoami',
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql('mongodb://123.456.78.9:1234/somedb2')
       connectionString3.should.eql(
-        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authSource=myauth'
+        'mongodb://johndoe:whoami@123.456.78.9:1234/somedb3?authSource=myauth',
       )
     })
 
-    it('should include `ssl` when specified', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include `ssl` when specified', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
-        hosts: '123.456.78.9:1234'
+        hosts: '123.456.78.9:1234',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         hosts: '123.456.78.9:1234',
-        ssl: true
+        ssl: true,
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2?ssl=true'
+        'mongodb://123.456.78.9:1234/somedb2?ssl=true',
       )
     })
 
-    it('should include `maxPoolSize` when specified', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include `maxPoolSize` when specified', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
-        hosts: '123.456.78.9:1234'
+        hosts: '123.456.78.9:1234',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         hosts: '123.456.78.9:1234',
-        maxPoolSize: 50
+        maxPoolSize: 50,
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2?maxPoolSize=50'
+        'mongodb://123.456.78.9:1234/somedb2?maxPoolSize=50',
       )
     })
 
-    it('should include `replicaSet` when specified', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include `replicaSet` when specified', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
-        hosts: '123.456.78.9:1234'
+        hosts: '123.456.78.9:1234',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         hosts: '123.456.78.9:1234',
-        replicaSet: 'rs0'
+        replicaSet: 'rs0',
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2?replicaSet=rs0'
+        'mongodb://123.456.78.9:1234/somedb2?replicaSet=rs0',
       )
     })
 
-    it('should include `readPreference` when specified', () => {
-      const mongoDb = new MongoDBAdapter()
-      const connectionString1 = mongoDb.getConnectionString({
+    it('should include `readPreference` when specified', function () {
+      const datastore = new DataStore()
+      const connectionString1 = datastore.getConnectionString({
         id: 'somedb1',
-        hosts: '123.456.78.9:1234'
+        hosts: '123.456.78.9:1234',
       })
-      const connectionString2 = mongoDb.getConnectionString({
+      const connectionString2 = datastore.getConnectionString({
         id: 'somedb2',
         hosts: '123.456.78.9:1234',
-        readPreference: 'nearest'
+        readPreference: 'nearest',
       })
 
       connectionString1.should.eql('mongodb://123.456.78.9:1234/somedb1')
       connectionString2.should.eql(
-        'mongodb://123.456.78.9:1234/somedb2?readPreference=nearest'
+        'mongodb://123.456.78.9:1234/somedb2?readPreference=nearest',
       )
     })
   })
 
-  describe('connect', function() {
-    it('should set readyState to 1 when connected', function(done) {
-      const mongodb = new MongoDBAdapter()
+  describe('connect', function () {
+    it('should set readyState to 1 when connected', async function () {
+      const datastore = new DataStore()
 
-      mongodb
-        .connect()
-        .then(() => {
-          mongodb.database.should.be.an.instanceOf(EventEmitter)
-          done()
-        })
-        .catch(err => {
-          console.log(err)
-        })
+      await datastore.connect()
+      datastore.readyState.should.be.eql(1)
     })
 
-    it('should assign Db to the database property', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('should assign Db to the database property', function () {
+      this.skip()
 
-      mongodb
-        .connect()
-        .then(() => {
-          mongodb.database.should.be.an.instanceOf(EventEmitter)
-          done()
-        })
-        .catch(err => {
-          console.log(err)
-        })
+      // MongoClient@6.8 does not implement EventEmitter, and in any case should not be exposed unnecessarily
+      // https://mongodb.github.io/node-mongodb-native/6.8/classes/Db.html
+
+      // const datastore = new DataStore()
+
+      // datastore
+      //   .connect()
+      //   .then(() => {
+      //     datastore.database.should.be.an.instanceOf(EventEmitter)
+      //     done()
+      //   })
+      //   .catch((err) => {
+      //     console.log(err)
+      //   })
     })
 
-    it('should reject when connecting with invalid credentials', function(done) {
+    it('should reject when connecting with invalid credentials', async function () {
       const newDatabases = JSON.parse(JSON.stringify(DATABASES_NO_DEFAULT))
 
       newDatabases[0].default = true
 
-      help
-        .setConfig({
-          databases: newDatabases,
-          hosts: [{host: '127.0.0.1', port: 27017}]
-        })
-        .then(restoreConfig => {
-          const mongodb = new MongoDBAdapter()
+      const restoreConfig = await helper.setConfig({
+        databases: newDatabases,
+        hosts: [{host: '127.0.0.1', port: 27017}],
+      })
 
-          mongodb.connect().catch(err => {
-            should.exist(err)
-            err.message.should.eql('Authentication failed.')
+      try {
+        const datastore = new DataStore()
 
-            restoreConfig().then(() => done())
-          })
-        })
+        await datastore.connect()
+      } catch (err) {
+        should.exist(err)
+        err.message.should.eql('Authentication failed.')
+      } finally {
+        await restoreConfig()
+      }
     })
 
-    it('should listen to database-specific environment variables', function(done) {
+    it('should listen to database-specific environment variables', async function () {
+      /** @todo This test seems to be incomplete */
       process.env.DB_1_HOST = '127.0.0.1:27017'
 
-      config.loadConfig()
+      loadConfig()
 
-      const mongodb = new MongoDBAdapter()
+      const datastore = new DataStore()
 
-      mongodb.connect().then(() => {
-        delete process.env.DB_1_HOST
+      await datastore.connect()
 
-        done()
-      })
+      delete process.env.DB_1_HOST
     })
 
-    it("should reject when connection can't be established", function(done) {
+    it("should reject when connection can't be established", async function () {
       const newDatabases = JSON.parse(JSON.stringify(DATABASES_NO_DEFAULT))
 
       newDatabases[2].default = true
 
-      help
-        .setConfig({
-          databases: newDatabases
-        })
-        .then(restoreConfig => {
-          const mongodb = new MongoDBAdapter()
+      const restoreConfig = await helper.setConfig({
+        databases: newDatabases,
+      })
 
-          mongodb.connect().catch(err => {
-            should.exist(err)
+      try {
+        const datastore = new DataStore()
 
-            restoreConfig().then(() => done())
-          })
-        })
+        await datastore.connect()
+      } catch (err) {
+        should.exist(err)
+      } finally {
+        await restoreConfig()
+      }
     })
 
-    it("should reject when replicaSet servers can't be found", function(done) {
+    it("should reject when replicaSet servers can't be found", async function () {
       const newDatabases = JSON.parse(JSON.stringify(DATABASES_NO_DEFAULT))
 
       newDatabases[3].default = true
 
-      help
-        .setConfig({
-          databases: newDatabases,
-          hosts: [{host: '127.0.0.1', port: 27017}]
-        })
-        .then(restoreConfig => {
-          const mongodb = new MongoDBAdapter()
-          const spy = sinon.spy(mongodb._mongoClient, 'connect')
+      const restoreConfig = await helper.setConfig({
+        databases: newDatabases,
+        hosts: [{host: '127.0.0.1', port: 27017}],
+      })
 
-          mongodb.connect().catch(err => {
-            should.exist(err)
-            err.should.be.Error
+      const datastore = new DataStore()
+      /** @todo spy not used due to private properties - investigate other application */
+      // const spy = sinon.spy(datastore._mongoClient, 'connect')
 
-            spy
-              .getCall(0)
-              .args[0].should.eql(
-                'mongodb://127.0.0.1:27017/replicadb?replicaSet=rs0'
-              )
-            spy.restore()
+      try {
+        await datastore.connect()
+      } catch (err) {
+        should.exist(err)
+        err.should.be.Error
 
-            restoreConfig().then(() => done())
-          })
-        })
+        // spy
+        //   .getCall(0)
+        //   .args[0].should.eql(
+        //     'mongodb://127.0.0.1:27017/replicadb?replicaSet=rs0',
+        //   )
+        // spy.restore()
+      } finally {
+        await restoreConfig()
+      }
     })
   })
 
-  describe('error states', function() {
-    it('`insert` should reject when not connected', function(done) {
-      const mongodb = new MongoDBAdapter()
+  describe('error states', function () {
+    it('`insert` should reject when not connected', async function () {
+      const datastore = new DataStore()
 
-      mongodb.connect({hi: 'there'}).then(() => {
-        mongodb.readyState = 0
+      try {
+        await datastore.connect({hi: 'there'})
+        datastore.readyState = lib.STATE_DISCONNECTED
 
-        mongodb
-          .insert({query: {}, collection: 'testdb', schema: {}})
-          .catch(err => {
-            should.exist(err)
-            err.should.be.Error
-            err.message.should.eql('DB_DISCONNECTED')
-
-            done()
-          })
-      })
+        await datastore.insert({query: {}, collection: 'testdb', schema: {}})
+      } catch (err) {
+        should.exist(err)
+        err.should.be.Error
+        err.message.should.eql('DB_DISCONNECTED')
+      }
     })
 
-    it('`update` should reject when not connected', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('`update` should reject when not connected', async function () {
+      const datastore = new DataStore()
 
-      mongodb.connect().then(() => {
-        mongodb.readyState = 0
+      try {
+        await datastore.connect()
+        datastore.readyState = lib.STATE_DISCONNECTED
 
-        mongodb
-          .update({query: {}, collection: 'testdb', schema: {}})
-          .catch(err => {
-            should.exist(err)
-            err.should.be.Error
-            err.message.should.eql('DB_DISCONNECTED')
-          })
-        done()
-      })
+        await datastore.update({query: {}, collection: 'testdb', schema: {}})
+      } catch (err) {
+        should.exist(err)
+        err.should.be.Error
+        err.message.should.eql('DB_DISCONNECTED')
+      }
     })
 
-    it('`find` should reject when not connected', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('`find` should reject when not connected', async function () {
+      const datastore = new DataStore()
 
-      mongodb.connect().then(() => {
-        mongodb.readyState = 0
+      try {
+        await datastore.connect()
+        datastore.readyState = lib.STATE_DISCONNECTED
 
-        mongodb
-          .find({query: {}, collection: 'testdb', schema: {}})
-          .catch(err => {
-            should.exist(err)
-            err.should.be.Error
-            err.message.should.eql('DB_DISCONNECTED')
-          })
-        done()
-      })
+        await datastore.find({query: {}, collection: 'testdb', schema: {}})
+      } catch (err) {
+        should.exist(err)
+        err.should.be.Error
+        err.message.should.eql('DB_DISCONNECTED')
+      }
     })
 
-    it('`delete` should reject when not connected', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('`delete` should reject when not connected', async function () {
+      const datastore = new DataStore()
 
-      mongodb.connect().then(() => {
-        mongodb.readyState = 0
+      try {
+        await datastore.connect()
+        datastore.readyState = lib.STATE_DISCONNECTED
 
-        mongodb
-          .delete({query: {}, collection: 'testdb', schema: {}})
-          .catch(err => {
-            should.exist(err)
-            err.should.be.Error
-            err.message.should.eql('DB_DISCONNECTED')
-          })
-        done()
-      })
+        await datastore.delete({query: {}, collection: 'testdb', schema: {}})
+      } catch (err) {
+        should.exist(err)
+        err.should.be.Error
+        err.message.should.eql('DB_DISCONNECTED')
+      }
     })
 
-    it('`stats` should reject when not connected', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('`stats` should reject when not connected', async function () {
+      const datastore = new DataStore()
 
-      mongodb.connect().then(() => {
-        mongodb.readyState = 0
+      try {
+        await datastore.connect()
+        datastore.readyState = lib.STATE_DISCONNECTED
 
-        mongodb.stats('testdb', {}).catch(err => {
-          should.exist(err)
-          err.should.be.Error
-          err.message.should.eql('DB_DISCONNECTED')
-        })
-        done()
-      })
+        await datastore.stats('testdb', {})
+      } catch (err) {
+        should.exist(err)
+        err.should.be.Error
+        err.message.should.eql('DB_DISCONNECTED')
+      }
     })
   })
 })

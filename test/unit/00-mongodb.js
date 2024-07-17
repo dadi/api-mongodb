@@ -1,48 +1,48 @@
-const EventEmitter = require('events').EventEmitter
-const MongoDBAdapter = require('../../lib')
-const packageManifest = require('../../package.json')
-const helper = require(__dirname + '/helper')
+import * as helper from './helper.js'
+import DataStore from '../../lib/index.js'
+import {EventEmitter} from 'events'
+import packageJson from '../../package.json' assert {type: 'json'}
 
-describe('MongoDB', function() {
+describe('MongoDB', function () {
   this.timeout(2000)
 
-  describe('constructor', function() {
-    it('should be exposed', function(done) {
-      MongoDBAdapter.should.be.Function
+  describe('constructor', function () {
+    it('should be exposed', function (done) {
+      DataStore.should.be.Function
       done()
     })
 
-    it('should inherit from EventEmitter', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('should inherit from EventEmitter', function (done) {
+      const mongodb = new DataStore()
 
       mongodb.should.be.an.instanceOf(EventEmitter)
       mongodb.emit.should.be.Function
       done()
     })
 
-    it('should have readyState == 0 when initialised', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('should have readyState == 0 when initialised', function (done) {
+      const mongodb = new DataStore()
 
       mongodb.readyState.should.eql(0)
       done()
     })
 
-    it('should expose a handshake function', function(done) {
-      const mongodb = new MongoDBAdapter()
+    it('should expose a handshake function', function (done) {
+      const mongodb = new DataStore()
 
-      mongodb.handshake().version.should.eql(packageManifest.version)
+      mongodb.handshake().version.should.eql(packageJson.version)
       done()
     })
   })
 
-  describe('query utils', function() {
-    describe('convertObjectIdsForSave', function() {
-      it('should be a method', function(done) {
-        new MongoDBAdapter().convertObjectIdsForSave.should.be.Function
+  describe('query utils', function () {
+    describe('convertObjectIdsForSave', function () {
+      it('should be a method', function (done) {
+        new DataStore().convertObjectIdsForSave.should.be.Function
         done()
       })
 
-      it('should accept schema and object and replace ObjectIDs in array', function(done) {
+      it('should accept schema and object and replace ObjectIDs in array', function (done) {
         const fields = helper.getModelSchema()
         const schema = {}
 
@@ -50,10 +50,10 @@ describe('MongoDB', function() {
 
         schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
           type: 'ObjectID',
-          required: false
+          required: false,
         })
 
-        const mongodb = new MongoDBAdapter()
+        const mongodb = new DataStore()
         let obj = {fieldName: 'Hello', field2: ['55cb1658341a0a804d4dadcc']}
 
         obj = mongodb.convertObjectIdsForSave(obj, schema.fields)
@@ -65,7 +65,7 @@ describe('MongoDB', function() {
         done()
       })
 
-      it('should accept schema and object and replace ObjectIDs as single value', function(done) {
+      it('should accept schema and object and replace ObjectIDs as single value', function (done) {
         const fields = helper.getModelSchema()
         const schema = {}
 
@@ -73,10 +73,10 @@ describe('MongoDB', function() {
 
         schema.fields.field2 = Object.assign({}, schema.fields.fieldName, {
           type: 'ObjectID',
-          required: false
+          required: false,
         })
 
-        const mongodb = new MongoDBAdapter()
+        const mongodb = new DataStore()
         let obj = {fieldName: 'Hello', field2: '55cb1658341a0a804d4dadcc'}
 
         obj = mongodb.convertObjectIdsForSave(obj, schema.fields)
@@ -94,15 +94,15 @@ describe('MongoDB', function() {
     //   allow $in query to convert Strings to ObjectIDs for Reference fields
     //   not convert (sub query) Strings to ObjectIDs when a field type is Object
     //   not convert (dot notation) Strings to ObjectIDs when a field type is Object
-    describe('`createObjectIdFromString` method', function() {
+    describe('`createObjectIdFromString` method', function () {
       it('should convert Strings to ObjectIDs when the field is _id', () => {
-        const mongodb = new MongoDBAdapter()
+        const mongodb = new DataStore()
         const query1 = {field1: 'hello'}
         const query2 = {field1: '55cb1658341a0a804d4dadcc'}
         const query3 = {_id: '55cb1658341a0a804d4dadcc'}
         const query4 = {_id: {$ne: '55cb1658341a0a804d4dadcc'}}
         const query5 = {
-          _id: {$in: ['55cb1658341a0a804d4dadca', '55cb1658341a0a804d4dadcb']}
+          _id: {$in: ['55cb1658341a0a804d4dadca', '55cb1658341a0a804d4dadcb']},
         }
 
         const newQuery1 = mongodb.createObjectIdFromString(query1)
@@ -119,10 +119,10 @@ describe('MongoDB', function() {
         newQuery5._id.$in[1].should.be.type('object')
       })
 
-      it('should not convert (sub query) Strings to ObjectIDs when a field type is Object', function(done) {
+      it('should not convert (sub query) Strings to ObjectIDs when a field type is Object', function (done) {
         let query = {field3: {_id: '55cb1658341a0a804d4dadcc'}}
 
-        const mongodb = new MongoDBAdapter()
+        const mongodb = new DataStore()
 
         query = mongodb.createObjectIdFromString(query)
 
@@ -133,10 +133,10 @@ describe('MongoDB', function() {
         done()
       })
 
-      it('should not convert (dot notation) Strings to ObjectIDs when a field type is Object', function(done) {
+      it('should not convert (dot notation) Strings to ObjectIDs when a field type is Object', function (done) {
         let query = {'field3._id': '55cb1658341a0a804d4dadcc'}
 
-        const mongodb = new MongoDBAdapter()
+        const mongodb = new DataStore()
 
         query = mongodb.createObjectIdFromString(query)
 

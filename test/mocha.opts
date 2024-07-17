@@ -1,6 +1,0 @@
---bail
---ui bdd
---recursive
---require=env-test
---require test/pretest.js
---exit

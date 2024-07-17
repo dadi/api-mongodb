@@ -1,12 +1,13 @@
 #! /usr/bin/env node
-
-const exec = require('child_process').exec
+import console from 'console'
+import {exec} from 'child_process'
+import process from 'process'
 
 if (process.env['CI']) {
   exec(
     'cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js',
-    err => {
+    (err) => {
       if (err) console.log(err)
-    }
+    },
   )
 }
