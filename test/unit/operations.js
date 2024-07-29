@@ -1,8 +1,8 @@
-import * as helper from './helper.js'
-import {DATABASES} from './databases.js'
-import DataStore from '../../lib/index.js'
-import should from 'should'
-import sinon from 'sinon'
+const helper = require('./helper.js')
+const {DATABASES} = require('./databases.js')
+const DataStore = require('../../lib/index.js')
+const should = require('should')
+const sinon = require('sinon')
 
 describe('MongoDB Operations', function () {
   this.timeout(2000)

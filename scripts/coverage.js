@@ -1,7 +1,7 @@
 #! /usr/bin/env node
-import console from 'console'
-import {exec} from 'child_process'
-import process from 'process'
+const console = require('console')
+const {exec} = require('child_process')
+const process = require('process')
 
 if (process.env['CI']) {
   exec(

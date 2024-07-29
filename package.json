@@ -1,6 +1,6 @@
 {
   "name": "@dadi/api-mongodb",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "A MongoDB adapter for DADI API",
   "keywords": [
     "dadi",
@@ -13,7 +13,6 @@
     "api-connector"
   ],
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "lint": "eslint . && prettier --check **/*.js",
     "test": "npm run test:fetch-data && npm run test:run",

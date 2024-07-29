@@ -1,4 +1,4 @@
-export const DATABASES = [
+const DATABASES = [
   {
     id: 'authdb',
     hosts: '127.0.0.1:27017',
@@ -35,7 +35,7 @@ export const DATABASES = [
   },
 ]
 
-export const DATABASES_NO_DEFAULT = [
+const DATABASES_NO_DEFAULT = [
   {
     id: 'authdb',
     hosts: '127.0.0.1:27017',
@@ -70,3 +70,6 @@ export const DATABASES_NO_DEFAULT = [
     hosts: '127.0.0.1:27017',
   },
 ]
+
+module.exports.DATABASES = DATABASES
+module.exports.DATABASES_NO_DEFAULT = DATABASES_NO_DEFAULT

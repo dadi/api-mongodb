@@ -1,6 +1,6 @@
-import console from 'console'
-import fs from 'fs'
-import process from 'process'
+const console = require('console')
+const fs = require('fs')
+const process = require('process')
 
 const testConfigPath = './config/mongodb.test.json'
 const testConfigSamplePath = './config/mongodb.test.json.sample'

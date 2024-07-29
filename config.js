@@ -1,7 +1,7 @@
-import console from 'console'
-import convict from 'convict'
-import fs from 'fs'
-import process from 'process'
+const console = require('console')
+const convict = require('convict')
+const fs = require('fs')
+const process = require('process')
 
 const DATABASE_SCHEMA = {
   authDatabase: {
@@ -117,9 +117,9 @@ function transformLegacyDatabaseBlock(name, block) {
   return newBlock
 }
 
-export const mainConfig = convict(MAIN_SCHEMA)
+const mainConfig = convict(MAIN_SCHEMA)
 
-export const loadConfig = () => {
+const loadConfig = () => {
   // Load environment dependent configuration.
   const environment = mainConfig.get('env')
   const filePath = `./config/mongodb.${environment}.json`
@@ -253,4 +253,6 @@ export const loadConfig = () => {
 
 loadConfig()
 
-export default mainConfig
+module.exports = mainConfig
+module.exports.mainConfig = mainConfig
+module.exports.loadConfig = loadConfig

@@ -1,10 +1,9 @@
-import lib from './lib'
+const lib = require('./lib')
 
-export * from './lib'
-
-export const settings = {
+const settings = {
   connectWithCollection: true,
   internalProperties: ['_id'],
 }
 
-export default lib
+module.exports = lib
+module.exports.settings = settings
