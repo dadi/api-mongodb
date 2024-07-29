@@ -1,10 +1,10 @@
-import {fileURLToPath} from 'url'
-import fs from 'fs'
-import {loadConfig} from '../../config.js'
-import path from 'path'
-import {setTimeout} from 'timers'
+const {fileURLToPath} = require('url')
+const fs = require('fs')
+const {loadConfig} = require('../../config.js')
+const path = require('path')
+const {setTimeout} = require('timers')
 
-export function getModelSchema() {
+function getModelSchema() {
   return {
     fieldName: {
       type: 'String',
@@ -22,7 +22,7 @@ export function getModelSchema() {
   }
 }
 
-export function getExtendedModelSchema() {
+function getExtendedModelSchema() {
   return {
     field1: {
       type: 'String',
@@ -47,7 +47,7 @@ export function getExtendedModelSchema() {
  * Return the template for the "words" collection schema, used to create the database collection
  * @return {Object} - the collection schema for the "words" collection
  */
-export function getWordSchema() {
+function getWordSchema() {
   return {
     fields: {
       word: {
@@ -71,7 +71,7 @@ export function getWordSchema() {
  * Return the template for the current collection's "search" collection schema, used to create the database collection
  * @return {Object} - the collection schema for the "search" collection
  */
-export function getSearchSchema() {
+function getSearchSchema() {
   return {
     fields: {
       word: {
@@ -111,12 +111,9 @@ export function getSearchSchema() {
  * @param {Object} data
  * @returns {Promise<() => Promise<void>>}
  */
-export function setConfig(data) {
+function setConfig(data) {
   const payload = JSON.stringify(data, null, 2)
-  const filePath = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    '../../config/mongodb.test.json',
-  )
+  const filePath = path.resolve(__dirname, '../../config/mongodb.test.json')
   const currentContent = fs.readFileSync(filePath, 'utf8')
 
   fs.writeFileSync(filePath, payload)
@@ -140,3 +137,9 @@ export function setConfig(data) {
     }, 500)
   })
 }
+
+module.exports.getModelSchema = getModelSchema
+module.exports.getExtendedModelSchema = getExtendedModelSchema
+module.exports.getWordSchema = getWordSchema
+module.exports.getSearchSchema = getSearchSchema
+module.exports.setConfig = setConfig

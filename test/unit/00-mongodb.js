@@ -1,7 +1,7 @@
-import * as helper from './helper.js'
-import DataStore from '../../lib/index.js'
-import {EventEmitter} from 'events'
-import packageJson from '../../package.json' assert {type: 'json'}
+const helper = require('./helper.js')
+const DataStore = require('../../lib')
+const {EventEmitter} = require('events')
+const packageJson = require('../../package.json')
 
 describe('MongoDB', function () {
   this.timeout(2000)

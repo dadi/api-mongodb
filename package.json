@@ -13,7 +13,6 @@
     "api-connector"
   ],
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "lint": "eslint . && prettier --check **/*.js",
     "test": "npm run test:fetch-data && npm run test:run",

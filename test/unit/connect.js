@@ -1,10 +1,10 @@
-import * as helper from './helper.js'
-import * as lib from '../../lib/index.js'
-import {DATABASES, DATABASES_NO_DEFAULT} from './databases.js'
-import DataStore from '../../lib/index.js'
-import {loadConfig} from '../../config.js'
-import process from 'process'
-import should from 'should'
+const helper = require('./helper.js')
+const lib = require('../../lib')
+const {DATABASES, DATABASES_NO_DEFAULT} = require('./databases.js')
+const DataStore = require('../../lib/index.js')
+const {loadConfig} = require('../../config.js')
+const process = require('process')
+const should = require('should')
 // import sinon from 'sinon'
 
 describe('MongoDB connection', function () {
